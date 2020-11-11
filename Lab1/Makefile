@@ -2,9 +2,9 @@ FILES=Makefile Questions/questions.pdf mandelbrot.c mandelbrot_main.c ppm.c ppm.
 ARCHIVE=Lab1.zip
 
 # Suggested list of features to tune to measure performance
-MAXITER=256
-WIDTH=500
-HEIGHT=375
+MAXITER=512
+WIDTH=1000
+HEIGHT=375*2
 LOWER_R=-2
 UPPER_R=0.6
 LOWER_I=-1
