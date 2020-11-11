@@ -36,6 +36,9 @@ struct mandelbrot_timing timing;
 int thread_stop;
 pthread_barrier_t thread_pool_barrier;
 
+// Our implementations
+pthread_mutex_t mutexLock = PTHREAD_MUTEX_INITIALIZER;
+
 pthread_t thread[NB_THREADS];
 struct mandelbrot_thread thread_data[NB_THREADS];
 #else
@@ -124,6 +127,10 @@ compute_chunk(struct mandelbrot_param *args)
 void
 init_round(struct mandelbrot_thread *args)
 {
+	// if(args->id == 0)
+	// {
+	// 	mutexLock = PTHREAD_MUTEX_INITIALIZER;
+	// }
 	// Initialize or reinitialize here variables before any thread starts or restarts computation
 	// Every thread run this function; feel free to allow only one of them to do anything
 }
@@ -136,22 +143,6 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 {
 // Compiled only if LOADBALANCE = 0
 #if LOADBALANCE == 0
-
-	// Replace this code with a naive *parallel* implementation.
-	// Only thread of ID 0 compute the whole picture
-	/*if(args->id == 0)
-	{
-		// Define the region compute_chunk() has to compute
-		// Entire height: from 0 to picture's height
-		parameters->begin_h = 0;
-		parameters->end_h = parameters->height;
-		// Entire width: from 0 to picture's width
-		parameters->begin_w = 0;
-		parameters->end_w = parameters->width;
-
-		// Go
-		compute_chunk(parameters);
-	}*/
 
 	struct mandelbrot_param threadParams;
 	threadParams.maxiter = parameters->maxiter;
@@ -171,35 +162,50 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 
 	compute_chunk(&threadParams);
 
-/**
- struct mandelbrot_param
-{
-  int height, width, maxiter;
-  struct ppm * picture;
-  int begin_h, end_h, begin_w, end_w;
-  color_t mandelbrot_color;
-  float lower_r, upper_r, lower_i, upper_i;
-  
-};
- **/
 #endif
 // Compiled only if LOADBALANCE = 1
 #if LOADBALANCE == 1
+	// lock
+	pthread_mutex_lock(&mutexLock);
+	struct mandelbrot_param threadParams = &parameters;
+	
+	while (threadParams.begin_w < threadParams.end_w && threadParams.begin_h < threadParams.end_h) {
+		pthread_mutex_lock(&mutexLock);
+
+		// If we have reached the end of one pixel-row, go down one row
+		if (parameters->begin_w + 1 > parameters.end_w) {
+			parameters->begin_w = 0;
+			parameters.begin_h++;
+
+			threadParams.begin_h++;
+		}
+
+		threadParams.begin_w = parameters->begin_w++;
+		pthread_mutex_unlock(&mutexLock);
+
+		compute_chunk(&threadParams);
+	}
+
+	/**
+	 * lock resource
+	 * Thread 0 -> resource.begin_w, resource.begin_h = {0, 0}
+	 * resource.begin_w, resource.begin_h {1, 0}
+	 * unlock resouce
+	 * 
+	 * Lock resource
+	 * Thread 1 -> resource.begin_w, resource.begin_h = {1, 0}
+	 * resource.begin_w, resource.begin_h {2, 0}
+	 * unlock resouce
+	 **/
+
+
+
+
 	// Replace this code with your load-balanced smarter solution.
 	// Only thread of ID 0 compute the whole picture
-	if(args->id == 0)
-	{
-		// Define the region compute_chunk() has to compute
-		// Entire height: from 0 to picture's height
-		parameters->begin_h = 0;
-		parameters->end_h = parameters->height;
-		// Entire width: from 0 to picture's width
-		parameters->begin_w = 0;
-		parameters->end_w = parameters->width;
+	// Thread takes pixel 0, pixel++
+	// Next thread takes pixel 1, pixel++ > width pixelHeight ++
 
-		// Go
-		compute_chunk(parameters);
-	}
 #endif
 // Compiled only if LOADBALANCE = 2
 #if LOADBALANCE == 2
