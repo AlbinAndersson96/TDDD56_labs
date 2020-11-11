@@ -169,12 +169,8 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 // Compiled only if LOADBALANCE = 1
 #if LOADBALANCE == 1
 	// lock
-	pthread_mutex_lock(&mutexLock);		
-	bool loopStatementWidth = widthIndex < parameters->end_w;
-	bool loopStatementHeight = heightIndex < parameters->end_h;
-	pthread_mutex_unlock(&mutexLock);
 
-	while (loopStatementWidth && loopStatementHeight) {
+	while (true) {
 		pthread_mutex_lock(&mutexLock);
 		//printf("Thread %d has locked resource\n", args->id);
 
