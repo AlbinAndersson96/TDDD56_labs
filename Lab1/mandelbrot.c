@@ -202,10 +202,10 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		}
 
 		threadParams.begin_h = heightIndex;
-		threadParams.end_h = heightIndex; // Not needed?
+		threadParams.end_h = heightIndex+1; // Not needed?
 
 		// If we have reached the end of one pixel-row, go down one row
-		if (widthIndex > threadParams.width) {
+		if (widthIndex + 40 > threadParams.width) {
 			widthIndex = 0;
 			heightIndex++;
 		} else {
