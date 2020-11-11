@@ -167,17 +167,24 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 #if LOADBALANCE == 1
 	// lock
 	pthread_mutex_lock(&mutexLock);
-	struct mandelbrot_param threadParams = &parameters;
+	struct mandelbrot_param threadParams = *parameters;
+	pthread_mutex_unlock(&mutexLock);
 	
 	while (threadParams.begin_w < threadParams.end_w && threadParams.begin_h < threadParams.end_h) {
 		pthread_mutex_lock(&mutexLock);
 
 		// If we have reached the end of one pixel-row, go down one row
-		if (parameters->begin_w + 1 > parameters.end_w) {
+		if (parameters->begin_w + 1 > parameters->end_w) {
 			parameters->begin_w = 0;
-			parameters.begin_h++;
+			parameters->begin_h++;
 
 			threadParams.begin_h++;
+		}
+		
+		// Om vi är vi slutet av bilden
+		if (threadParams.begin_w < threadParams.end_w && threadParams.begin_h < threadParams.end_h) {
+			pthread_mutex_unlock(&mutexLock);
+			break;
 		}
 
 		threadParams.begin_w = parameters->begin_w++;
