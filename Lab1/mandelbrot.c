@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <malloc.h>
 
+#include <stdbool.h> 
+
 #include "mandelbrot.h"
 #include "ppm.h"
 
@@ -38,6 +40,7 @@ pthread_barrier_t thread_pool_barrier;
 
 // Our implementations
 pthread_mutex_t mutexLock = PTHREAD_MUTEX_INITIALIZER;
+int widthIndex, heightIndex;
 
 pthread_t thread[NB_THREADS];
 struct mandelbrot_thread thread_data[NB_THREADS];
@@ -116,25 +119,25 @@ compute_chunk(struct mandelbrot_param *args)
 			// elements to appear black in the final picture.
 			pixel = val > args->maxiter ? args->mandelbrot_color : color[val
 			    % num_colors(args)];
-
+			
+			// lock?
 			ppm_write(args->picture, j, i, pixel);
+			// unlock?
 		}
 	}
 }
 
 /***** You may modify this portion *****/
 #if NB_THREADS > 0
+
 void
 init_round(struct mandelbrot_thread *args)
 {
-	// if(args->id == 0)
-	// {
-	// 	mutexLock = PTHREAD_MUTEX_INITIALIZER;
-	// }
-	// Initialize or reinitialize here variables before any thread starts or restarts computation
-	// Every thread run this function; feel free to allow only one of them to do anything
+	if (args->id == 0) {
+		widthIndex = 0;
+		heightIndex = 0;
+	}
 }
-
 /*
  * Each thread starts individually this function, where args->id give the thread's id from 0 to NB_THREADS
  */
@@ -167,35 +170,58 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 #if LOADBALANCE == 1
 	// lock
 	pthread_mutex_lock(&mutexLock);
-	struct mandelbrot_param threadParams = *parameters;
-	pthread_mutex_unlock(&mutexLock);
+	printf("Thread with ID: %d has acquired pixels {%d, %d}\n", args->id, parameters->begin_w, parameters->begin_h);
+	struct mandelbrot_param threadParams;
+	threadParams.maxiter = parameters->maxiter;
+	threadParams.width = parameters->width;
+	threadParams.height = parameters->height;
+	threadParams.picture = parameters->picture;
+	threadParams.mandelbrot_color = parameters->mandelbrot_color;
+	threadParams.lower_r = parameters->lower_r;
+	threadParams.upper_r = parameters->upper_r;
+	threadParams.lower_i = parameters->lower_i;
+	threadParams.upper_i = parameters->upper_i;
 	
-	while (threadParams.begin_w < threadParams.end_w && threadParams.begin_h < threadParams.end_h) {
+	threadParams.begin_h = 0;
+	threadParams.end_h = parameters->end_h;
+	threadParams.begin_w = 0;
+	threadParams.end_w = parameters->end_w;
+		
+	bool loopStatementWidth = widthIndex < threadParams.end_w;
+	bool loopStatementHeight = heightIndex < threadParams.end_h;
+	pthread_mutex_unlock(&mutexLock);
+
+	while (loopStatementWidth && loopStatementHeight) {
 		pthread_mutex_lock(&mutexLock);
+		//printf("Thread %d has locked resource\n", args->id);
+
+		threadParams.begin_w = widthIndex;
+		threadParams.end_w = widthIndex + 1;
+
+		threadParams.begin_h = heightIndex;
+		threadParams.end_h = heightIndex + 1; // Not needed?
 
 		// If we have reached the end of one pixel-row, go down one row
-		if (parameters->begin_w + 1 > parameters->end_w) {
-			parameters->begin_w = 0;
-			parameters->begin_h++;
-
-			threadParams.begin_h++;
+		if (widthIndex > threadParams.width) {
+			widthIndex = 0;
+			heightIndex++;
+		} else {
+			widthIndex++;
 		}
 		
 		// Om vi är vi slutet av bilden
-		if (threadParams.begin_w < threadParams.end_w && threadParams.begin_h < threadParams.end_h) {
+		if (heightIndex > threadParams.height) {
+			//printf("Thread %d has exited and unlocked resource\n", args->id);
 			pthread_mutex_unlock(&mutexLock);
 			break;
 		}
 
-		threadParams.begin_w = parameters->begin_w++;
+		
+		//printf("Thread with ID: %d is computing pixels {%d, %d}\n", args->id, threadParams.begin_w, threadParams.begin_h);
+		//printf("Thread %d has unlocked resource\n\n", args->id);
 		pthread_mutex_unlock(&mutexLock);
 
 		compute_chunk(&threadParams);
-
-		pthread_mutex_lock(&mutexLock);
-		parameters->picture = threadParams.picture;
-		pthread_mutex_unlock(&mutexLock);
-
 	}
 
 	/**
@@ -208,9 +234,18 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 	 * Thread 1 -> resource.begin_w, resource.begin_h = {1, 0}
 	 * resource.begin_w, resource.begin_h {2, 0}
 	 * unlock resouce
-	 **/
+	 
 
+	struct mandelbrot_param
+		{
+		int height, width, maxiter;
+		color_t mandelbrot_color;
+		int begin_h, end_h, begin_w, end_w;
+		float lower_r, upper_r, lower_i, upper_i;
+		struct ppm * picture;
+		};
 
+	**/
 
 
 	// Replace this code with your load-balanced smarter solution.
