@@ -169,43 +169,27 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 // Compiled only if LOADBALANCE = 1
 #if LOADBALANCE == 1
 	// lock
-	pthread_mutex_lock(&mutexLock);
-	struct mandelbrot_param threadParams;
-	threadParams.maxiter = parameters->maxiter;
-	threadParams.width = parameters->width;
-	threadParams.height = parameters->height;
-	threadParams.picture = parameters->picture;
-	threadParams.mandelbrot_color = parameters->mandelbrot_color;
-	threadParams.lower_r = parameters->lower_r;
-	threadParams.upper_r = parameters->upper_r;
-	threadParams.lower_i = parameters->lower_i;
-	threadParams.upper_i = parameters->upper_i;
-	
-	threadParams.begin_h = 0;
-	threadParams.end_h = parameters->end_h;
-	threadParams.begin_w = 0;
-	threadParams.end_w = parameters->end_w;
-		
-	bool loopStatementWidth = widthIndex < threadParams.end_w;
-	bool loopStatementHeight = heightIndex < threadParams.end_h;
+	pthread_mutex_lock(&mutexLock);		
+	bool loopStatementWidth = widthIndex < parameters->end_w;
+	bool loopStatementHeight = heightIndex < parameters->end_h;
 	pthread_mutex_unlock(&mutexLock);
 
 	while (loopStatementWidth && loopStatementHeight) {
 		pthread_mutex_lock(&mutexLock);
 		//printf("Thread %d has locked resource\n", args->id);
 
-		threadParams.begin_w = widthIndex;
-		threadParams.end_w = widthIndex + 60;
+		parameters->begin_w = widthIndex;
+		parameters->end_w = widthIndex + 60;
 
-		if (threadParams.end_w > threadParams.width) {
-			threadParams.end_w = threadParams.width;
+		if (parameters->end_w > parameters->width) {
+			parameters->end_w = parameters->width;
 		}
 
-		threadParams.begin_h = heightIndex;
-		threadParams.end_h = heightIndex+1; // Not needed?
+		parameters->begin_h = heightIndex;
+		parameters->end_h = heightIndex+1; // Not needed?
 
 		// If we have reached the end of one pixel-row, go down one row
-		if (widthIndex + 60 > threadParams.width) {
+		if (widthIndex + 60 > parameters->width) {
 			widthIndex = 0;
 			heightIndex++;
 		} else {
@@ -213,7 +197,7 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		}
 		
 		// Om vi är vi slutet av bilden
-		if (heightIndex > threadParams.height) {
+		if (heightIndex > parameters->height) {
 			//printf("Thread %d has exited and unlocked resource\n", args->id);
 			pthread_mutex_unlock(&mutexLock);
 			break;
@@ -224,7 +208,7 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		//printf("Thread %d has unlocked resource\n\n", args->id);
 		pthread_mutex_unlock(&mutexLock);
 
-		compute_chunk(&threadParams);
+		compute_chunk(parameters);
 	}
 
 	/**
