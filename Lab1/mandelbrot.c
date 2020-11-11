@@ -195,7 +195,7 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		//printf("Thread %d has locked resource\n", args->id);
 
 		threadParams.begin_w = widthIndex;
-		threadParams.end_w = widthIndex + 40;
+		threadParams.end_w = widthIndex + 60;
 
 		if (threadParams.end_w > threadParams.width) {
 			threadParams.end_w = threadParams.width;
@@ -205,11 +205,11 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		threadParams.end_h = heightIndex+1; // Not needed?
 
 		// If we have reached the end of one pixel-row, go down one row
-		if (widthIndex + 40 > threadParams.width) {
+		if (widthIndex + 60 > threadParams.width) {
 			widthIndex = 0;
 			heightIndex++;
 		} else {
-			widthIndex = widthIndex + 40;
+			widthIndex = widthIndex + 60;
 		}
 		
 		// Om vi är vi slutet av bilden
