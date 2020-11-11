@@ -170,7 +170,6 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 #if LOADBALANCE == 1
 	// lock
 	pthread_mutex_lock(&mutexLock);
-	printf("Thread with ID: %d has acquired pixels {%d, %d}\n", args->id, parameters->begin_w, parameters->begin_h);
 	struct mandelbrot_param threadParams;
 	threadParams.maxiter = parameters->maxiter;
 	threadParams.width = parameters->width;
@@ -196,17 +195,21 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		//printf("Thread %d has locked resource\n", args->id);
 
 		threadParams.begin_w = widthIndex;
-		threadParams.end_w = widthIndex + 1;
+		threadParams.end_w = widthIndex + 40;
+
+		if (threadParams.end_w > threadParams.width) {
+			threadParams.end_w = threadParams.width;
+		}
 
 		threadParams.begin_h = heightIndex;
-		threadParams.end_h = heightIndex + 1; // Not needed?
+		threadParams.end_h = heightIndex; // Not needed?
 
 		// If we have reached the end of one pixel-row, go down one row
 		if (widthIndex > threadParams.width) {
 			widthIndex = 0;
 			heightIndex++;
 		} else {
-			widthIndex++;
+			widthIndex = widthIndex + 40;
 		}
 		
 		// Om vi är vi slutet av bilden
