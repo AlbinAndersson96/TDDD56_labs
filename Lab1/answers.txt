@@ -1,0 +1,13 @@
+Write a detailed explanation why computation load can be imbalanced and how it affects the global performance?
+- The iterative loop detects if our calculations are diverging and exits early meaning that if the calculation does not diverge it will
+  take longer to compute and thus create an in-balance in computation load.
+
+Describe different load-balancing methods that would help reducing the performanceloss due to load-imbalance. You should be able to come up with at least two.
+- Static load balancing
+    * A solution that is derived before runtime such that there will be no extra runtime overhead and all rules are pre-defined.
+    * In the case of mandelbrot we can make the threads calculate sections of N size where N is the number of threads and iterative over the entire image
+      and thus it should roughly equalize the load on all threads
+- Dynamic load balancing
+    * A solution that during runtime adapts and shifts loads according to which threads are doing a lot of work and some whom are not.
+    * A way of dynamically allocating work would be for the threads to have a shared work pool to pull tasks from, not stopping execution until the pool is empty and all work is done.
+

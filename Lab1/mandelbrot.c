@@ -136,9 +136,10 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 {
 // Compiled only if LOADBALANCE = 0
 #if LOADBALANCE == 0
+
 	// Replace this code with a naive *parallel* implementation.
 	// Only thread of ID 0 compute the whole picture
-	if(args->id == 0)
+	/*if(args->id == 0)
 	{
 		// Define the region compute_chunk() has to compute
 		// Entire height: from 0 to picture's height
@@ -150,7 +151,37 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 
 		// Go
 		compute_chunk(parameters);
-	}
+	}*/
+
+	struct mandelbrot_param threadParams;
+	threadParams.maxiter = parameters->maxiter;
+	threadParams.width = parameters->width;
+	threadParams.height = parameters->height;
+	threadParams.picture = parameters->picture;
+	threadParams.mandelbrot_color = parameters->mandelbrot_color;
+	threadParams.lower_r = parameters->lower_r;
+	threadParams.upper_r = parameters->upper_r;
+	threadParams.lower_i = parameters->lower_i;
+	threadParams.upper_i = parameters->upper_i;
+	
+	threadParams.begin_h = 0 + args->id * parameters->height / NB_THREADS;
+	threadParams.end_h = 0 + (args->id+1) * parameters->height / NB_THREADS;
+	threadParams.begin_w = 0;
+	threadParams.end_w = parameters->width;
+
+	compute_chunk(&threadParams);
+
+/**
+ struct mandelbrot_param
+{
+  int height, width, maxiter;
+  struct ppm * picture;
+  int begin_h, end_h, begin_w, end_w;
+  color_t mandelbrot_color;
+  float lower_r, upper_r, lower_i, upper_i;
+  
+};
+ **/
 #endif
 // Compiled only if LOADBALANCE = 1
 #if LOADBALANCE == 1
