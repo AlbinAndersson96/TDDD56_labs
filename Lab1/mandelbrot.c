@@ -191,6 +191,11 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		pthread_mutex_unlock(&mutexLock);
 
 		compute_chunk(&threadParams);
+
+		pthread_mutex_lock(&mutexLock);
+		parameters->picture = threadParams.picture;
+		pthread_mutex_unlock(&mutexLock);
+
 	}
 
 	/**
