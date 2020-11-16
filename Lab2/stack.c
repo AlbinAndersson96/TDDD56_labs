@@ -1,3 +1,15 @@
+/**
+ * Ask about calling conv for CAS, what are we missing?
+ * Freelist?
+ * Tests and multi-threading. Lab instructions and code/comments don't add up?
+ */
+
+
+
+
+
+
+
 /*
  * stack.c
  *
@@ -45,6 +57,29 @@
 #endif
 #endif
 
+pthread_mutex_t mutexLock = PTHREAD_MUTEX_INITIALIZER;
+
+void printStack(stack_t* stack) 
+{
+  pthread_mutex_lock(&mutexLock);
+  if (stack->head == NULL) {
+    printf("List is empty!\n");
+    pthread_mutex_unlock(&mutexLock);
+    return;
+  }
+
+  Node* current = stack->head;
+  printf("head->%d", current->val);
+  while(current->next != NULL) { 
+    current = current->next;
+    printf("->%d", current->val);
+  }
+  printf("\n");
+
+  pthread_mutex_unlock(&mutexLock);
+}
+
+
 int
 stack_check(stack_t *stack)
 {
@@ -62,35 +97,81 @@ stack_check(stack_t *stack)
 }
 
 int /* Return the type you prefer */
-stack_push(/* Make your own signature */)
+stack_push(stack_t* stack, int val)
 {
+
+#if DEBUG == 1
+printStack(stack);
+#endif
+
 #if NON_BLOCKING == 0
   // Implement a lock_based stack
+
+  Node* new = malloc(sizeof(Node));
+
+  pthread_mutex_lock(&mutexLock);
+
+  new->val = val;
+  new->next = stack->head;
+
+  stack->head = new;
+
+  stack->counter++;
+  stack->ops++;
+  
+	pthread_mutex_unlock(&mutexLock);
+
+
 #elif NON_BLOCKING == 1
-  // Implement a harware CAS-based stack
-#else
-  /*** Optional ***/
-  // Implement a software CAS-based stack
+  
+  Node *new = malloc(sizeof(Node));
+  Node *head = stack->head;
+  new->val = val;
+  new->next = head;
+    
+  printf("%lud\n",cas(&stack->head->val, head->val, new->val));  // Ask about calling conv for CAS
+
 #endif
 
   // Debug practice: you can check if this operation results in a stack in a consistent check
   // It doesn't harm performance as sanity check are disabled at measurement time
   // This is to be updated as your implementation progresses
-  stack_check((stack_t*)1);
+  stack_check(stack);
 
   return 0;
 }
 
 int /* Return the type you prefer */
-stack_pop(/* Make your own signature */)
+stack_pop(stack_t* stack)
 {
+
+#if DEBUG == 1
+ printStack(stack);
+#endif
+
 #if NON_BLOCKING == 0
-  // Implement a lock_based stack
+  int retVal;
+  pthread_mutex_lock(&mutexLock);
+  
+  if (stack->counter == 0) {
+    pthread_mutex_unlock(&mutexLock);
+    return -1;
+  }
+
+  retVal = stack->head->val;
+  Node* temp = stack->head->next;
+  free(stack->head);
+  stack->head = temp;
+
+  stack->counter--;
+  stack->ops++;
+  
+  pthread_mutex_unlock(&mutexLock);
+
+  return retVal;
+
 #elif NON_BLOCKING == 1
   // Implement a harware CAS-based stack
-#else
-  /*** Optional ***/
-  // Implement a software CAS-based stack
 #endif
 
   return 0;

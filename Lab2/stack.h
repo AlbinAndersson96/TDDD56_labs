@@ -27,14 +27,25 @@
 #ifndef STACK_H
 #define STACK_H
 
+
+typedef struct Node Node;
+
+struct Node 
+{
+  int val;
+  Node *next;
+};
+
 struct stack
 {
-  int change_this_member;
+  int ops;
+  int counter;
+  struct Node *head;
 };
 typedef struct stack stack_t;
 
-int stack_push(/* Make your own signature */);
-int stack_pop(/* Make your own signature */);
+int stack_push(stack_t *stack, int val);
+int stack_pop(stack_t *stack);
 
 /* Use this to check if your stack is in a consistent state from time to time */
 int stack_check(stack_t *stack);

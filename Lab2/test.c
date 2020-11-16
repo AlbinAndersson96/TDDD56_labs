@@ -33,7 +33,7 @@
 #include "non_blocking.h"
 
 #define test_run(test)\
-  printf("[%s:%s:%i] Running test '%s'... ", __FILE__, __FUNCTION__, __LINE__, #test);\
+  printf("[%s:%s:%i] Running test '%s'...\n ", __FILE__, __FUNCTION__, __LINE__, #test);\
   test_setup();\
   if(test())\
   {\
@@ -103,7 +103,7 @@ stack_measure_pop(void* arg)
     clock_gettime(CLOCK_MONOTONIC, &t_start[args->id]);
     for (i = 0; i < MAX_PUSH_POP / NB_THREADS; i++)
       {
-        // See how fast your implementation can pop MAX_PUSH_POP elements in parallel
+        stack_pop(stack);
       }
     clock_gettime(CLOCK_MONOTONIC, &t_stop[args->id]);
 
@@ -119,7 +119,7 @@ stack_measure_push(void* arg)
   clock_gettime(CLOCK_MONOTONIC, &t_start[args->id]);
   for (i = 0; i < MAX_PUSH_POP / NB_THREADS; i++)
     {
-        // See how fast your implementation can push MAX_PUSH_POP elements in parallel
+      stack_push(stack, i);
     }
   clock_gettime(CLOCK_MONOTONIC, &t_stop[args->id]);
 
@@ -132,7 +132,7 @@ stack_measure_push(void* arg)
 void
 test_init()
 {
-  // Initialize your test batch
+
 }
 
 void
@@ -144,16 +144,31 @@ test_setup()
   // Allocate a new stack and reset its values
   stack = malloc(sizeof(stack_t));
 
+  Node* head = malloc(sizeof(Node));
+  head->val = -1;
+  head->next = NULL;
+
+
+
   // Reset explicitely all members to a well-known initial value
   // For instance (to be deleted as your stack design progresses):
-  stack->change_this_member = 0;
+  stack->ops = 0;
+  stack->counter = 0;
+  stack->head = head;
+  
 }
 
 void
 test_teardown()
 {
   // Do not forget to free your stacks after each test
+  while(stack->counter != 0) 
+  { 
+    stack_pop(stack);
+  }
+
   // to avoid memory leaks
+  free(stack->head);
   free(stack);
 }
 
@@ -170,7 +185,11 @@ test_push_safe()
   // several threads push concurrently to it
 
   // Do some work
-  stack_push(/* add relevant arguments here */);
+  stack_push(stack, 0);
+  stack_push(stack, 1);
+  stack_push(stack, 2);
+  stack_push(stack, 3);
+
 
   // check if the stack is in a consistent state
   int res = assert(stack_check(stack));
@@ -178,16 +197,25 @@ test_push_safe()
   // check other properties expected after a push operation
   // (this is to be updated as your stack design progresses)
   // Now, the test succeeds
-  return res && assert(stack->change_this_member == 0);
+  return res && assert(stack->counter == 4 && stack->ops == 4); //LOOK AT THIS LATER
 }
 
 int
 test_pop_safe()
 {
   // Same as the test above for parallel pop operation
+  stack_push(stack, 0);
+  stack_push(stack, 1);
+  stack_push(stack, 2);
+  stack_push(stack, 3);
 
+  stack_pop(stack);
+  stack_pop(stack);
+  stack_pop(stack);
+  stack_pop(stack);
+  
   // For now, this test always fails
-  return 0;
+  return assert(stack->counter == 0 && stack->ops == 8);
 }
 
 // 3 Threads should be enough to raise and detect the ABA problem
@@ -197,6 +225,7 @@ int
 test_aba()
 {
 #if NON_BLOCKING == 1 || NON_BLOCKING == 2
+  pthread_t thread[ABA_NB_THREADS];
   int success, aba_detected = 0;
   // Write here a test for the ABA problem
   success = aba_detected;
@@ -308,6 +337,18 @@ setbuf(stdout, NULL);
   pthread_attr_t attr;
   stack_measure_arg_t arg[NB_THREADS];
   pthread_attr_init(&attr);
+
+#if MEASURE == 1
+  test_setup();
+
+  for(int i = 0; i < MAX_PUSH_POP; i++) {
+    stack_push(stack, i);
+  }
+  
+#elif MEASURE == 2
+  test_setup();
+
+#endif
 
   clock_gettime(CLOCK_MONOTONIC, &start);
   for (i = 0; i < NB_THREADS; i++)
