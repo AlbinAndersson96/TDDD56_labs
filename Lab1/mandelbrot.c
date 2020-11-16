@@ -170,39 +170,42 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 #if LOADBALANCE == 1
 	// lock
 
+	int tWidth;
+	int tHeight;
 	while (true) {
 		pthread_mutex_lock(&mutexLock);
-		//printf("Thread %d has locked resource\n", args->id);
+		tWidth = widthIndex;
+		tHeight = heightIndex;
 
-		parameters->begin_w = widthIndex;
-		parameters->end_w = widthIndex + 60;
-
-		if (parameters->end_w > parameters->width) {
-			parameters->end_w = parameters->width;
-		}
-
-		parameters->begin_h = heightIndex;
-		parameters->end_h = heightIndex+1; // Not needed?
-
-		// If we have reached the end of one pixel-row, go down one row
 		if (widthIndex + 60 > parameters->width) {
 			widthIndex = 0;
 			heightIndex++;
 		} else {
 			widthIndex = widthIndex + 60;
 		}
-		
-		// Om vi är vi slutet av bilden
-		if (heightIndex > parameters->height) {
-			//printf("Thread %d has exited and unlocked resource\n", args->id);
-			pthread_mutex_unlock(&mutexLock);
-			break;
+		pthread_mutex_unlock(&mutexLock);
+
+
+		//printf("Thread %d has locked resource\n", args->id);
+
+		parameters->begin_w = tWidth;
+		parameters->end_w = tWidth + 60;
+
+		if (parameters->end_w > parameters->width) {
+			parameters->end_w = parameters->width;
 		}
 
+		parameters->begin_h = tHeight;
+		parameters->end_h = tHeight + 1; // Not needed?
+
+		// If we have reached the end of one pixel-row, go down one row
+
 		
-		//printf("Thread with ID: %d is computing pixels {%d, %d}\n", args->id, threadParams.begin_w, threadParams.begin_h);
-		//printf("Thread %d has unlocked resource\n\n", args->id);
-		pthread_mutex_unlock(&mutexLock);
+		// Om vi är vi slutet av bilden
+		if (tHeight > parameters->height) {
+			//printf("Thread %d has exited and unlocked resource\n", args->id);
+			break;
+		}
 
 		compute_chunk(parameters);
 	}
