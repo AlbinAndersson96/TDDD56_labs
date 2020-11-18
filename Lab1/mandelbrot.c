@@ -132,11 +132,13 @@ compute_chunk(struct mandelbrot_param *args)
 
 #if LOADBALANCE == 2
 #define TASKS ((WIDTH*HEIGHT) / BLOCK_SIZE) / NB_THREADS
+
+int work[NB_THREADS][TASKS];
 #endif
 
 #if NB_THREADS > 0
 
-int work[NB_THREADS][TASKS];
+
 
 void
 init_round(struct mandelbrot_thread *args)
