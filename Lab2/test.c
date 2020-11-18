@@ -117,10 +117,17 @@ stack_measure_push(void* arg)
   stack_measure_arg_t *args = (stack_measure_arg_t*) arg;
   int i;
 
+  // Per thread freelist
+  freelist_t *fl = malloc(sizeof(freelist_t));
+  preAllocateNodes(fl, 1000);
+
+  
   clock_gettime(CLOCK_MONOTONIC, &t_start[args->id]);
   for (i = 0; i < MAX_PUSH_POP / NB_THREADS; i++)
-    {
-      stack_push(stack, i);
+    { 
+      printf("TID: %d -> %d\n", args->id, i);
+      stack_push(stack, fl, i);
+      
     }
   clock_gettime(CLOCK_MONOTONIC, &t_stop[args->id]);
 
@@ -151,7 +158,7 @@ test_setup()
   freelist->head = flHead;
 
   // Init our freelist
-  preAllocateNodes(freelist);
+  preAllocateNodes(freelist, 1000);
 
   Node* head = malloc(sizeof(Node));
   head->val = -1;
@@ -360,15 +367,22 @@ setbuf(stdout, NULL);
   stack_measure_arg_t arg[NB_THREADS];
   pthread_attr_init(&attr);
 
-#if MEASURE == 1
-  test_setup();
+  Node* head = malloc(sizeof(Node));
+  head->val = -1;
+  head->next = NULL;
 
-  for(int i = 0; i < MAX_PUSH_POP; i++) {
-    stack_push(stack, i);
-  }
+  // Allocate a new stack and reset its values
+  stack = malloc(sizeof(stack_t));
+
+#if MEASURE == 1
+  // test_setup();
+
+  // for(int i = 0; i < MAX_PUSH_POP; i++) {
+  //   stack_push(stack, i);
+  // }
   
 #elif MEASURE == 2
-  test_setup();
+  //test_setup();
 
 #endif
 

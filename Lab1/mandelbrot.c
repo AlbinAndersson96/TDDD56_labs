@@ -157,18 +157,10 @@ init_round(struct mandelbrot_thread *args)
 		
 		pthread_mutex_lock(&mutexLock);
 		work[args->id][0] = args->id;
-		//printf("work[%d][%d] = %d\n", args->id, 0, work[args->id][0]);
 
 		for (int t = 1; t < TASKS; t++) 
 		{
-			//printf("Loop %d start\n", t);
-			//printf("work[%d]", args->id);
-			//printf("[%d] = ", t);
-			//printf("%d\n", work[args->id][t-1] + NB_THREADS);
-			//printf("work[%d][%d] = %d\n", args->id, t, work[args->id][t-1] + NB_THREADS);
 			work[args->id][t] = work[args->id][t-1] + NB_THREADS;
-
-			//printf("done\n");
 		}
 
 		pthread_mutex_unlock(&mutexLock);
@@ -185,17 +177,6 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 {
 // Compiled only if LOADBALANCE = 0
 #if LOADBALANCE == 0
-
-/*	struct mandelbrot_param threadParams;
-	threadParams.maxiter = parameters->maxiter;
-	threadParams.width = parameters->width;
-	threadParams.height = parameters->height;
-	threadParams.picture = parameters->picture;
-	threadParams.mandelbrot_color = parameters->mandelbrot_color;
-	threadParams.lower_r = parameters->lower_r;
-	threadParams.upper_r = parameters->upper_r;
-	threadParams.lower_i = parameters->lower_i;
-	threadParams.upper_i = parameters->upper_i;*/
 	
 	parameters->begin_h = 0 + args->id * parameters->height / NB_THREADS;
 	if(args->id == NB_THREADS-1)
@@ -260,24 +241,13 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 	// *optional* replace this code with another load-balancing solution.
 	// Only thread of ID 0 compute the whole picture
 
-	int tIDs[TASKS];
+		parameters->begin_w = 0;
+		parameters->end_w = parameters->width;
 	
-	pthread_mutex_lock(&mutexLock);
-	for(int t = 0; t < TASKS; t++) {
-		tIDs[t] = work[args->id][t];
-	}
-	pthread_mutex_unlock(&mutexLock); 
+	for(int i = args->id; i < TASKS; i+=BLOCK_SIZE*NB_THREADS) {
 
-	
-	for(int i = 0; i < TASKS; i++) {
-		int heightIndex = BLOCK_SIZE * tIDs[i] / WIDTH; // 1003 / 1000 = 1 2000 / 1000 = 2
-
-		parameters->begin_h = heightIndex;
-		parameters->end_h = heightIndex + 1;
-
-		
-		parameters->begin_w = (BLOCK_SIZE * tIDs[i]) % 1000;
-		parameters->end_w = (parameters->begin_w + BLOCK_SIZE);
+		parameters->begin_h = i;
+		parameters->end_h = parameters->begin_h + BLOCK_SIZE;
 
 		compute_chunk(parameters);
 	}

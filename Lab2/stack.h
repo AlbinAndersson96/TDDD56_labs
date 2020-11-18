@@ -55,7 +55,7 @@ typedef struct stack stack_t;
 
 
 void addFreeNode(freelist_t* fl, Node* node);
-void preAllocateNodes(freelist_t* fl);
+void preAllocateNodes(freelist_t* fl, int numNodes);
 Node *getFreeNode(freelist_t* fl);
 
 int stack_push(stack_t *stack, freelist_t* freelist, int val);

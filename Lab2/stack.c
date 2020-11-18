@@ -69,28 +69,32 @@ void addFreeNode(freelist_t* fl, Node* node) {
 	pthread_mutex_unlock(&freelistLock);
 }
 
-void preAllocateNodes(freelist_t* fl) {
+void preAllocateNodes(freelist_t* fl, int numNodes) {
   int i;
-  for(i = 0; i<1000; i++)
+  for(i = 0; i < numNodes; i++)
   {
     Node *node = malloc(sizeof(Node));
     addFreeNode(fl, node);
   }
 }
 
-Node *getFreeNode(freelist_t* fl)
+Node* getFreeNode(freelist_t* fl)
 {
-  pthread_mutex_lock(&freelistLock);
+
+
+  //pthread_mutex_lock(&freelistLock);
   if(fl->counter != 0)
   {
-    Node *tmp = fl->head;
-    fl->head = fl->head->next;   
+    
+    Node *tmp = fl->head;  
+    fl->head = fl->head->next;    
     fl->counter--;
-    pthread_mutex_unlock(&freelistLock);
+    //pthread_mutex_unlock(&freelistLock);
+
     return tmp;
   }
 
-  pthread_mutex_unlock(&freelistLock);
+  //pthread_mutex_unlock(&freelistLock);
   return NULL;
 }
 
@@ -132,17 +136,18 @@ stack_check(stack_t *stack)
 }
 
 int /* Return the type you prefer */
-stack_push(stack_t* stack, freelist_t* freelist, int val)
+stack_push(stack_t* stack, freelist_t* fl, int val)
 {
 
-#if DEBUG == 1
-printStack(stack);
-#endif
+// #if DEBUG == 1
+// printStack(stack);
+// #endif
 
-Node* new = getFreeNode(freelist);  
-if (new == NULL) {
-  new = malloc(sizeof(Node)); // chunk malloc
-}
+  Node* new = getFreeNode(fl);  
+  if (new == NULL) {
+    printf("Freelist empty, re-allocating!\n");
+    new = malloc(sizeof(Node)); // chunk malloc
+  }
 
 #if NON_BLOCKING == 0
   // Implement a lock_based stack
@@ -156,6 +161,7 @@ if (new == NULL) {
 
   stack->counter++;
   stack->ops++;
+  
   
 	pthread_mutex_unlock(&mutexLock);
 
