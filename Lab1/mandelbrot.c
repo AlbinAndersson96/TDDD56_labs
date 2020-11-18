@@ -147,8 +147,6 @@ init_round(struct mandelbrot_thread *args)
 	}
 
 	#if LOADBALANCE == 2
-
-		printf("Thread: %d gets num tasks: %d\n", args->id, TASKS);
 		
 		pthread_mutex_lock(&mutexLock);
 		work[args->id][0] = args->id;
