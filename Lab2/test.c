@@ -82,6 +82,7 @@ assert_fun(int expr, const char *str, const char *file, const char* function, si
 #endif
 
 stack_t *stack;
+freelist_t *freelist;
 data_t data;
 
 #if MEASURE != 0
@@ -141,13 +142,23 @@ test_setup()
   // Allocate and initialize your test stack before each test
   data = DATA_VALUE;
 
-  // Allocate a new stack and reset its values
-  stack = malloc(sizeof(stack_t));
+  // Allocate a new freelist and reset its values
+  freelist = malloc(sizeof(freelist_t));
+
+  Node* flHead = malloc(sizeof(Node));
+  flHead->val = -1;
+  flHead->next = NULL;
+  freelist->head = flHead;
+
+  // Init our freelist
+  preAllocateNodes(freelist);
 
   Node* head = malloc(sizeof(Node));
   head->val = -1;
   head->next = NULL;
 
+  // Allocate a new stack and reset its values
+  stack = malloc(sizeof(stack_t));
 
 
   // Reset explicitely all members to a well-known initial value
@@ -161,15 +172,25 @@ test_setup()
 void
 test_teardown()
 {
+  printf("Started teardown\n");
+
   // Do not forget to free your stacks after each test
   while(stack->counter != 0) 
   { 
-    stack_pop(stack);
+    stack_pop(stack, freelist);
   }
 
   // to avoid memory leaks
   free(stack->head);
   free(stack);
+
+   while(freelist->counter != 0) 
+   { 
+     Node* t = getFreeNode(freelist);
+     free(t);
+   }
+
+  // free(freelist);
 }
 
 void
@@ -185,10 +206,10 @@ test_push_safe()
   // several threads push concurrently to it
 
   // Do some work
-  stack_push(stack, 0);
-  stack_push(stack, 1);
-  stack_push(stack, 2);
-  stack_push(stack, 3);
+  stack_push(stack, freelist, 0);
+  stack_push(stack, freelist, 1);
+  stack_push(stack, freelist, 2);
+  stack_push(stack, freelist, 3);
 
 
   // check if the stack is in a consistent state
@@ -204,15 +225,15 @@ int
 test_pop_safe()
 {
   // Same as the test above for parallel pop operation
-  stack_push(stack, 0);
-  stack_push(stack, 1);
-  stack_push(stack, 2);
-  stack_push(stack, 3);
+  stack_push(stack, freelist, 0);
+  stack_push(stack, freelist, 1);
+  stack_push(stack, freelist, 2);
+  stack_push(stack, freelist, 3);
 
-  stack_pop(stack);
-  stack_pop(stack);
-  stack_pop(stack);
-  stack_pop(stack);
+  stack_pop(stack, freelist);
+  stack_pop(stack, freelist);
+  stack_pop(stack, freelist);
+  stack_pop(stack, freelist);
   
   // For now, this test always fails
   return assert(stack->counter == 0 && stack->ops == 8);

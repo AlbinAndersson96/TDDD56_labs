@@ -1,0 +1,16 @@
+Write an explaination on how CAS can be used to implement protection for concurrent use of data structures
+- "Atomically compares a valuein a memory cell to a supplied value and, if these are equal, swaps the contents of the memory cell with the value stored in a register."
+- In our case we can compare the top-most value in the stack (by it's address) and make the same conclusions/decisions as mentioned above.
+
+
+Sketch a scenario featuring several threads raising the ABA problem
+- CAS cannot detect if a memory location has changed value from a value Ato a value Band then back to A again.
+
+* There is a linked list with values A, B and C. (head->A->B->C)
+* Thread 1 tries to pop A from the stack but gets interrupted by Thread 2 because t2 just finished CAS(head, A, B)
+* Thread 2 successfully pops A so the list now looks like this: head->B->C
+* Thread 2 now pops B from the stack so the list looks like this: head->C
+- A and B are now in the freelist(?)
+* Thread 2 now re-inserts A from the freelist into the linked list. The linked list now looks like this: head->A->C
+* Thread 1 now tries to pop A again so it runs CAS(head, A, B) which succeeds because head now points to A again, however B is still in the freelist.
+* Linked list now looks like this(?): head->???->???

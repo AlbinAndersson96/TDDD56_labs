@@ -5,11 +5,6 @@
  */
 
 
-
-
-
-
-
 /*
  * stack.c
  *
@@ -58,6 +53,46 @@
 #endif
 
 pthread_mutex_t mutexLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t freelistLock = PTHREAD_MUTEX_INITIALIZER;
+
+void addFreeNode(freelist_t* fl, Node* node) {
+  pthread_mutex_lock(&freelistLock);
+
+  node->val = 0;
+  node->next = fl->head;
+
+  fl->head = node;
+
+  fl->counter++;
+  fl->ops++;
+  
+	pthread_mutex_unlock(&freelistLock);
+}
+
+void preAllocateNodes(freelist_t* fl) {
+  int i;
+  for(i = 0; i<1000; i++)
+  {
+    Node *node = malloc(sizeof(Node));
+    addFreeNode(fl, node);
+  }
+}
+
+Node *getFreeNode(freelist_t* fl)
+{
+  pthread_mutex_lock(&freelistLock);
+  if(fl->counter != 0)
+  {
+    Node *tmp = fl->head;
+    fl->head = fl->head->next;   
+    fl->counter--;
+    pthread_mutex_unlock(&freelistLock);
+    return tmp;
+  }
+
+  pthread_mutex_unlock(&freelistLock);
+  return NULL;
+}
 
 void printStack(stack_t* stack) 
 {
@@ -97,18 +132,21 @@ stack_check(stack_t *stack)
 }
 
 int /* Return the type you prefer */
-stack_push(stack_t* stack, int val)
+stack_push(stack_t* stack, freelist_t* freelist, int val)
 {
 
 #if DEBUG == 1
 printStack(stack);
 #endif
 
+Node* new = getFreeNode(freelist);  
+if (new == NULL) {
+  new = malloc(sizeof(Node)); // chunk malloc
+}
+
 #if NON_BLOCKING == 0
   // Implement a lock_based stack
-
-  Node* new = malloc(sizeof(Node));
-
+  
   pthread_mutex_lock(&mutexLock);
 
   new->val = val;
@@ -124,12 +162,11 @@ printStack(stack);
 
 #elif NON_BLOCKING == 1
   
-  Node *new = malloc(sizeof(Node));
   Node *head = stack->head;
   new->val = val;
   new->next = head;
     
-  printf("%lud\n",cas(&stack->head->val, head->val, new->val));  // Ask about calling conv for CAS
+  printf("%lud\n",cas((size_t*)&stack->head->val, (size_t)head->val, (size_t)new->val));  // Ask about calling conv for CAS
 
 #endif
 
@@ -142,7 +179,7 @@ printStack(stack);
 }
 
 int /* Return the type you prefer */
-stack_pop(stack_t* stack)
+stack_pop(stack_t* stack, freelist_t* freelist)
 {
 
 #if DEBUG == 1
@@ -160,7 +197,9 @@ stack_pop(stack_t* stack)
 
   retVal = stack->head->val;
   Node* temp = stack->head->next;
-  free(stack->head);
+  
+  addFreeNode(freelist, stack->head);
+
   stack->head = temp;
 
   stack->counter--;

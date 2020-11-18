@@ -42,10 +42,24 @@ struct stack
   int counter;
   struct Node *head;
 };
+
+struct freelist
+{
+  int ops;
+  int counter;
+  struct Node *head;
+};
+
+typedef struct freelist freelist_t;
 typedef struct stack stack_t;
 
-int stack_push(stack_t *stack, int val);
-int stack_pop(stack_t *stack);
+
+void addFreeNode(freelist_t* fl, Node* node);
+void preAllocateNodes(freelist_t* fl);
+Node *getFreeNode(freelist_t* fl);
+
+int stack_push(stack_t *stack, freelist_t* freelist, int val);
+int stack_pop(stack_t *stack, freelist_t* freelist);
 
 /* Use this to check if your stack is in a consistent state from time to time */
 int stack_check(stack_t *stack);
