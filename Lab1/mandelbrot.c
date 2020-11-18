@@ -198,11 +198,14 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 	threadParams.upper_i = parameters->upper_i;*/
 	
 	parameters->begin_h = 0 + args->id * parameters->height / NB_THREADS;
-	parameters->end_h = 0 + (args->id+1) * parameters->height / NB_THREADS;
+	if(args->id == NB_THREADS-1)
+		parameters->end_h = parameters->height;
+	else
+		parameters->end_h = 0 + (args->id+1) * parameters->height / NB_THREADS;
 	parameters->begin_w = 0;
 	parameters->end_w = parameters->width;
 
-	compute_chunk(threadParams);
+	compute_chunk(parameters);
 
 #endif
 // Compiled only if LOADBALANCE = 1
