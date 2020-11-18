@@ -5,8 +5,7 @@ Write a detailed explanation why computation load can be imbalanced and how it a
 Describe different load-balancing methods that would help reducing the performanceloss due to load-imbalance. You should be able to come up with at least two.
 - Static load balancing
     * A solution that is derived before runtime such that there will be no extra runtime overhead and all rules are pre-defined.
-    * In the case of mandelbrot we can make the threads calculate sections of N size where N is the number of threads and iterative over the entire image
-      and thus it should roughly equalize the load on all threads
+    * One could, before computing starts, investigate the Mandlebrot set and find what parts are heavy to compute and which are not and divide the heavy parts among the threads, thus spreading and balancing the load.
 - Dynamic load balancing
     * A solution that during runtime adapts and shifts loads according to which threads are doing a lot of work and some whom are not.
     * A way of dynamically allocating work would be for the threads to have a shared work pool to pull tasks from, not stopping execution until the pool is empty and all work is done.

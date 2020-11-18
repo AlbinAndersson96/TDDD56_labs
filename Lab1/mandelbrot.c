@@ -128,7 +128,15 @@ compute_chunk(struct mandelbrot_param *args)
 }
 
 /***** You may modify this portion *****/
+#define BLOCK_SIZE 50
+
+#if LOADBALANCE == 2
+#define TASKS ((WIDTH*HEIGHT) / BLOCK_SIZE) / NB_THREADS
+#endif
+
 #if NB_THREADS > 0
+
+int work[NB_THREADS][TASKS];
 
 void
 init_round(struct mandelbrot_thread *args)
@@ -137,7 +145,33 @@ init_round(struct mandelbrot_thread *args)
 		widthIndex = 0;
 		heightIndex = 0;
 	}
+
+	#if LOADBALANCE == 2
+
+		printf("Thread: %d gets num tasks: %d\n", args->id, TASKS);
+		
+		pthread_mutex_lock(&mutexLock);
+		work[args->id][0] = args->id;
+		//printf("work[%d][%d] = %d\n", args->id, 0, work[args->id][0]);
+
+		for (int t = 1; t < TASKS; t++) 
+		{
+			//printf("Loop %d start\n", t);
+			//printf("work[%d]", args->id);
+			//printf("[%d] = ", t);
+			//printf("%d\n", work[args->id][t-1] + NB_THREADS);
+			//printf("work[%d][%d] = %d\n", args->id, t, work[args->id][t-1] + NB_THREADS);
+			work[args->id][t] = work[args->id][t-1] + NB_THREADS;
+
+			//printf("done\n");
+		}
+
+		pthread_mutex_unlock(&mutexLock);
+
+		
+	#endif
 }
+
 /*
  * Each thread starts individually this function, where args->id give the thread's id from 0 to NB_THREADS
  */
@@ -147,7 +181,7 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 // Compiled only if LOADBALANCE = 0
 #if LOADBALANCE == 0
 
-	struct mandelbrot_param threadParams;
+/*	struct mandelbrot_param threadParams;
 	threadParams.maxiter = parameters->maxiter;
 	threadParams.width = parameters->width;
 	threadParams.height = parameters->height;
@@ -156,14 +190,14 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 	threadParams.lower_r = parameters->lower_r;
 	threadParams.upper_r = parameters->upper_r;
 	threadParams.lower_i = parameters->lower_i;
-	threadParams.upper_i = parameters->upper_i;
+	threadParams.upper_i = parameters->upper_i;*/
 	
-	threadParams.begin_h = 0 + args->id * parameters->height / NB_THREADS;
-	threadParams.end_h = 0 + (args->id+1) * parameters->height / NB_THREADS;
-	threadParams.begin_w = 0;
-	threadParams.end_w = parameters->width;
+	parameters->begin_h = 0 + args->id * parameters->height / NB_THREADS;
+	parameters->end_h = 0 + (args->id+1) * parameters->height / NB_THREADS;
+	parameters->begin_w = 0;
+	parameters->end_w = parameters->width;
 
-	compute_chunk(&threadParams);
+	compute_chunk(threadParams);
 
 #endif
 // Compiled only if LOADBALANCE = 1
@@ -172,16 +206,17 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 
 	int tWidth;
 	int tHeight;
+	
 	while (true) {
 		pthread_mutex_lock(&mutexLock);
 		tWidth = widthIndex;
 		tHeight = heightIndex;
 
-		if (widthIndex + 60 > parameters->width) {
+		if (widthIndex + BLOCK_SIZE > parameters->width) {
 			widthIndex = 0;
 			heightIndex++;
 		} else {
-			widthIndex = widthIndex + 60;
+			widthIndex = widthIndex + BLOCK_SIZE;
 		}
 		pthread_mutex_unlock(&mutexLock);
 
@@ -189,7 +224,7 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		//printf("Thread %d has locked resource\n", args->id);
 
 		parameters->begin_w = tWidth;
-		parameters->end_w = tWidth + 60;
+		parameters->end_w = tWidth + BLOCK_SIZE;
 
 		if (parameters->end_w > parameters->width) {
 			parameters->end_w = parameters->width;
@@ -210,53 +245,37 @@ parallel_mandelbrot(struct mandelbrot_thread *args, struct mandelbrot_param *par
 		compute_chunk(parameters);
 	}
 
-	/**
-	 * lock resource
-	 * Thread 0 -> resource.begin_w, resource.begin_h = {0, 0}
-	 * resource.begin_w, resource.begin_h {1, 0}
-	 * unlock resouce
-	 * 
-	 * Lock resource
-	 * Thread 1 -> resource.begin_w, resource.begin_h = {1, 0}
-	 * resource.begin_w, resource.begin_h {2, 0}
-	 * unlock resouce
-	 
-
-	struct mandelbrot_param
-		{
-		int height, width, maxiter;
-		color_t mandelbrot_color;
-		int begin_h, end_h, begin_w, end_w;
-		float lower_r, upper_r, lower_i, upper_i;
-		struct ppm * picture;
-		};
-
-	**/
-
-
-	// Replace this code with your load-balanced smarter solution.
-	// Only thread of ID 0 compute the whole picture
-	// Thread takes pixel 0, pixel++
-	// Next thread takes pixel 1, pixel++ > width pixelHeight ++
 
 #endif
 // Compiled only if LOADBALANCE = 2
 #if LOADBALANCE == 2
 	// *optional* replace this code with another load-balancing solution.
 	// Only thread of ID 0 compute the whole picture
-	if(args->id == 0)
-	{
-		// Define the region compute_chunk() has to compute
-		// Entire height: from 0 to picture's height
-		parameters->begin_h = 0;
-		parameters->end_h = parameters->height;
-		// Entire width: from 0 to picture's width
-		parameters->begin_w = 0;
-		parameters->end_w = parameters->width;
 
-		// Go
+	int tIDs[TASKS];
+	
+	pthread_mutex_lock(&mutexLock);
+	for(int t = 0; t < TASKS; t++) {
+		tIDs[t] = work[args->id][t];
+	}
+	pthread_mutex_unlock(&mutexLock); 
+
+	
+	for(int i = 0; i < TASKS; i++) {
+		int heightIndex = BLOCK_SIZE * tIDs[i] / WIDTH; // 1003 / 1000 = 1 2000 / 1000 = 2
+
+		parameters->begin_h = heightIndex;
+		parameters->end_h = heightIndex + 1;
+
+		
+		parameters->begin_w = (BLOCK_SIZE * tIDs[i]) % 1000;
+		parameters->end_w = (parameters->begin_w + BLOCK_SIZE);
+
 		compute_chunk(parameters);
 	}
+	
+
+
 #endif
 }
 /***** end *****/
