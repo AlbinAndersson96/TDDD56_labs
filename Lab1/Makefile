@@ -3,8 +3,8 @@ ARCHIVE=Lab1.zip
 
 # Suggested list of features to tune to measure performance
 MAXITER=512
-WIDTH=1000
-HEIGHT=750
+WIDTH=500
+HEIGHT=375
 LOWER_R=-2
 UPPER_R=0.6
 LOWER_I=-1
