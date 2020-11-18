@@ -187,6 +187,7 @@ test_teardown()
    while(freelist->counter != 0) 
    { 
      Node* t = getFreeNode(freelist);
+     
      free(t);
    }
 

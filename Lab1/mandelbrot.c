@@ -128,7 +128,12 @@ compute_chunk(struct mandelbrot_param *args)
 }
 
 /***** You may modify this portion *****/
+#if LOADBALANCE == 1
+#define BLOCK_SIZE 60
+#elif LOADBALANCE == 2
 #define BLOCK_SIZE 50
+#endif
+
 
 #if LOADBALANCE == 2
 #define TASKS ((WIDTH*HEIGHT) / BLOCK_SIZE) / NB_THREADS
