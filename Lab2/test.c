@@ -81,8 +81,8 @@ assert_fun(int expr, const char *str, const char *file, const char* function, si
 }
 #endif
 
+
 stack_t *stack;
-freelist_t *freelist;
 data_t data;
 
 #if MEASURE != 0
@@ -101,10 +101,20 @@ stack_measure_pop(void* arg)
     stack_measure_arg_t *args = (stack_measure_arg_t*) arg;
     int i;
 
+  // Per thread freelist
+  freelist_t *fl = malloc(sizeof(freelist_t));
+  preAllocateNodes(fl, MAX_PUSH_POP / NB_THREADS);
+
+    for (i = 0; i < MAX_PUSH_POP / NB_THREADS; i++)
+    { 
+      stack_push(stack, fl, i);
+      
+    }
+
     clock_gettime(CLOCK_MONOTONIC, &t_start[args->id]);
     for (i = 0; i < MAX_PUSH_POP / NB_THREADS; i++)
       {
-        stack_pop(stack);
+        stack_pop(stack, fl);
       }
     clock_gettime(CLOCK_MONOTONIC, &t_stop[args->id]);
 
@@ -119,13 +129,13 @@ stack_measure_push(void* arg)
 
   // Per thread freelist
   freelist_t *fl = malloc(sizeof(freelist_t));
-  preAllocateNodes(fl, 1000);
+  preAllocateNodes(fl, MAX_PUSH_POP / NB_THREADS);
 
   
   clock_gettime(CLOCK_MONOTONIC, &t_start[args->id]);
   for (i = 0; i < MAX_PUSH_POP / NB_THREADS; i++)
     { 
-      printf("TID: %d -> %d\n", args->id, i);
+      //d -> %d\n", args->id, i);
       stack_push(stack, fl, i);
       
     }
@@ -135,6 +145,72 @@ stack_measure_push(void* arg)
 }
 #endif
 #endif
+
+// Declares
+void* thread_test_lock() {
+  freelist_t *fl = malloc(sizeof(freelist_t));
+  preAllocateNodes(fl, MAX_PUSH_POP);
+
+  for (int i = 0; i < MAX_PUSH_POP; ++i)
+    {
+      stack_push(stack, fl, i);
+    }
+    
+  for (int i = 0; i < MAX_PUSH_POP/2; ++i)
+    {
+      stack_pop(stack, fl);
+    }
+
+  return NULL;
+}
+
+int test_lock() {
+  pthread_attr_t attr;
+  pthread_t thread[NB_THREADS];
+  pthread_mutexattr_t mutex_attr;
+  pthread_mutex_t lock;
+
+  int success;
+
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); 
+  pthread_mutexattr_init(&mutex_attr);
+  pthread_mutex_init(&lock, &mutex_attr);
+
+  for (int i = 0; i < NB_THREADS; ++i)
+  { 
+    pthread_create(&thread[i], &attr, &thread_test_lock, NULL);
+  }
+
+  for (int i = 0; i < NB_THREADS; ++i)
+  {
+    pthread_join(thread[i], NULL);
+  }
+
+  success = assert(stack->counter == (size_t)(NB_THREADS * MAX_PUSH_POP / 2));
+
+  if (!success)
+  {
+    printf("Got %i, expected %i. \n", stack->counter, NB_THREADS * MAX_PUSH_POP / 2);
+    printf("Is MAX_PUSH_POP an even number?\n");
+  }
+
+  if (stack->head == NULL) {
+    printf("List is empty!\n");
+    return success;
+  }
+
+  Node* current = stack->head;
+  printf("head->%d", current->val);
+  while(current->next != NULL) { 
+    current = current->next;
+    printf("->%d", current->val);
+  }
+  printf("\n");
+
+  return success;
+}
+
 
 /* A bunch of optional (but useful if implemented) unit tests for your stack */
 void
@@ -149,18 +225,8 @@ test_setup()
   // Allocate and initialize your test stack before each test
   data = DATA_VALUE;
 
-  // Allocate a new freelist and reset its values
-  freelist = malloc(sizeof(freelist_t));
-
-  Node* flHead = malloc(sizeof(Node));
-  flHead->val = -1;
-  flHead->next = NULL;
-  freelist->head = flHead;
-
-  // Init our freelist
-  preAllocateNodes(freelist, 1000);
-
   Node* head = malloc(sizeof(Node));
+  //head->val = 0;
   head->val = -1;
   head->next = NULL;
 
@@ -184,19 +250,19 @@ test_teardown()
   // Do not forget to free your stacks after each test
   while(stack->counter != 0) 
   { 
-    stack_pop(stack, freelist);
+    stack_pop(stack, NULL);
   }
 
   // to avoid memory leaks
   free(stack->head);
   free(stack);
 
-   while(freelist->counter != 0) 
-   { 
-     Node* t = getFreeNode(freelist);
+   //while(freelist->counter != 0) 
+   //{ 
+   //  Node* t = getFreeNode(freelist);
      
-     free(t);
-   }
+   //  free(t);
+   //}
 
   // free(freelist);
 }
@@ -210,14 +276,19 @@ test_finalize()
 int
 test_push_safe()
 {
+
+  // Per thread freelist
+  freelist_t *fl = malloc(sizeof(freelist_t));
+  preAllocateNodes(fl, MAX_PUSH_POP);
+  
   // Make sure your stack remains in a good state with expected content when
   // several threads push concurrently to it
 
   // Do some work
-  stack_push(stack, freelist, 0);
-  stack_push(stack, freelist, 1);
-  stack_push(stack, freelist, 2);
-  stack_push(stack, freelist, 3);
+  stack_push(stack, fl, 0);
+  stack_push(stack, fl, 1);
+  stack_push(stack, fl, 2);
+  stack_push(stack, fl, 3);
 
 
   // check if the stack is in a consistent state
@@ -232,16 +303,19 @@ test_push_safe()
 int
 test_pop_safe()
 {
-  // Same as the test above for parallel pop operation
-  stack_push(stack, freelist, 0);
-  stack_push(stack, freelist, 1);
-  stack_push(stack, freelist, 2);
-  stack_push(stack, freelist, 3);
+  freelist_t *fl = malloc(sizeof(freelist_t));
+  preAllocateNodes(fl, MAX_PUSH_POP);
 
-  stack_pop(stack, freelist);
-  stack_pop(stack, freelist);
-  stack_pop(stack, freelist);
-  stack_pop(stack, freelist);
+  // Same as the test above for parallel pop operation
+  stack_push(stack, fl, 0);
+  stack_push(stack, fl, 1);
+  stack_push(stack, fl, 2);
+  stack_push(stack, fl, 3);
+
+  stack_pop(stack, fl);
+  stack_pop(stack, fl);
+  stack_pop(stack, fl);
+  stack_pop(stack, fl);
   
   // For now, this test always fails
   return assert(stack->counter == 0 && stack->ops == 8);
@@ -353,13 +427,14 @@ setbuf(stdout, NULL);
 #if MEASURE == 0
   test_init();
 
+  test_run(test_lock);
   test_run(test_cas);
 
   test_run(test_push_safe);
   test_run(test_pop_safe);
-  test_run(test_aba);
+  //test_run(test_aba);
 
-  test_finalize();
+  //test_finalize();
 #else
   int i;
   pthread_t thread[NB_THREADS];

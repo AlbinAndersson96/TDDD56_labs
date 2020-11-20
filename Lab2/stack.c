@@ -56,7 +56,12 @@ pthread_mutex_t mutexLock = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t freelistLock = PTHREAD_MUTEX_INITIALIZER;
 
 void addFreeNode(freelist_t* fl, Node* node) {
-  pthread_mutex_lock(&freelistLock);
+
+  // For teardown etc
+  if (fl == NULL) {
+    free(node);
+    return;
+  }
 
   node->val = 0;
   node->next = fl->head;
@@ -65,8 +70,6 @@ void addFreeNode(freelist_t* fl, Node* node) {
 
   fl->counter++;
   fl->ops++;
-  
-	pthread_mutex_unlock(&freelistLock);
 }
 
 void preAllocateNodes(freelist_t* fl, int numNodes) {
@@ -81,20 +84,16 @@ void preAllocateNodes(freelist_t* fl, int numNodes) {
 Node* getFreeNode(freelist_t* fl)
 {
 
-
-  //pthread_mutex_lock(&freelistLock);
   if(fl->counter != 0)
   {
     
     Node *tmp = fl->head;  
     fl->head = fl->head->next;    
     fl->counter--;
-    //pthread_mutex_unlock(&freelistLock);
 
     return tmp;
   }
 
-  //pthread_mutex_unlock(&freelistLock);
   return NULL;
 }
 
@@ -168,11 +167,18 @@ stack_push(stack_t* stack, freelist_t* fl, int val)
 
 #elif NON_BLOCKING == 1
   
-  Node *head = stack->head;
-  new->val = val;
-  new->next = head;
+  Node *head;
+  do
+  {
+    head = stack->head;
     
-  printf("%lud\n",cas((size_t*)&stack->head->val, (size_t)head->val, (size_t)new->val));  // Ask about calling conv for CAS
+    new->val = val;
+    new->next = head;
+
+  } while(cas((uintptr_t*)&stack->head, (uintptr_t)head, (uintptr_t)new) != (uintptr_t)head);
+
+  stack->counter++;
+  stack->ops++;
 
 #endif
 
@@ -188,9 +194,9 @@ int /* Return the type you prefer */
 stack_pop(stack_t* stack, freelist_t* freelist)
 {
 
-#if DEBUG == 1
- printStack(stack);
-#endif
+// #if DEBUG == 1
+//  printStack(stack);
+// #endif
 
 #if NON_BLOCKING == 0
   int retVal;
@@ -216,7 +222,20 @@ stack_pop(stack_t* stack, freelist_t* freelist)
   return retVal;
 
 #elif NON_BLOCKING == 1
-  // Implement a harware CAS-based stack
+  Node *head;
+  Node *new;
+  do
+  {
+    head = stack->head; 
+    new = head->next;
+
+  } while(cas((uintptr_t*)&stack->head, (uintptr_t)head, (uintptr_t)new) != (uintptr_t)head);
+
+  addFreeNode(freelist, head);
+
+  stack->counter--;
+  stack->ops++;
+
 #endif
 
   return 0;

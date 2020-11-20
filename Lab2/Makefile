@@ -1,13 +1,13 @@
 FILES=Makefile non_blocking.c non_blocking.h stack.c stack.h test.c test.h compile *.m run settings start variables plot_data.m time_difference_global.m time_difference_thread.m
 ARCHIVE=Lab2.zip
 
-NB_THREADS=24
-NON_BLOCKING=0
+NB_THREADS=1
+NON_BLOCKING=1
 SUFFIX=
 MEASURE=2
-MAX_PUSH_POP=5000
+MAX_PUSH_POP=5000000
 OUT=stack$(SUFFIX)
-DEBUG=1
+DEBUG=0
 
 STACK_SUFFIX=-$(NON_BLOCKING)
 NON_BLOCKING_SUFFIX=-$(NON_BLOCKING)
