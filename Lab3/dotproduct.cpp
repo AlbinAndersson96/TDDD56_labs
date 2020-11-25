@@ -56,7 +56,7 @@ int main(int argc, const char* argv[])
 	});
 	
 	// Map + Reduce
-	auto map = skepu::Map(mult);
+	auto map = skepu::Map<2>(mult);
 	auto reduce = skepu::Reduce(add);
 	auto timeSep = skepu::benchmark::measureExecTime([&]
 	{
