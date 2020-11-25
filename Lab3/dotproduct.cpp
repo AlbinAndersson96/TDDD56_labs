@@ -57,7 +57,7 @@ int main(int argc, const char* argv[])
 	// Map + Reduce
 	auto timeSep = skepu::benchmark::measureExecTime([&]
 	{
-		// your code here
+		resSep = 0.0f;
 	});
 	
 	std::cout << "Time Combined: " << (timeComb.count() / 10E6) << " seconds.\n";
