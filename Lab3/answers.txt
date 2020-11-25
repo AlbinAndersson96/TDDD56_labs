@@ -11,6 +11,5 @@
     - It should depend on the problem size, expecially when talking about the GPU-backends. They should be WAY quicker on large problems while on smaller problems they would struggle due to the overhead associated with
       sending data to and from the device.
 
-1.4 Try measuring the parallel back-ends with measureExecTime exchanged for measureExecTimeIdempotent. This measurement does a "cold run" of the lambda expression before running the proper measurement. 
-    Do you see a difference for some backends, and if so, why?
-    - 
+1.4 Try measuring the parallel back-ends with measureExecTime exchanged for measureExecTimeIdempotent. This measurement does a "cold run" of the lambda expression before running the proper measurement. Do you see a difference for some backends, and if so, why?
+    - All backends were faster with measureExecTimeIdempotent as compared to measureExecTime. However CPU and OpenMP had pretty much the same time as before in the separate-test while showing great improvements in the MapReduce one.

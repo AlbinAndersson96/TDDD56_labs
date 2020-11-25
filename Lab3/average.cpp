@@ -28,7 +28,10 @@ unsigned char average_kernel(skepu::Region2D<unsigned char> m, size_t elemPerPx)
 
 unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPerPx)
 {
-	// your code here
+	std::cout << "m.oi: " << m.oi << std::endl;
+	// for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
+		
+	// }
 	return m(0);
 }
 
@@ -69,6 +72,7 @@ int main(int argc, char* argv[])
 	skepu::Matrix<unsigned char> inputMatrixPad = ReadAndPadPngFileToMatrix(inputFileName, radius, colorType, imageInfo);
 	skepu::Matrix<unsigned char> inputMatrix = ReadPngFileToMatrix(inputFileName, colorType, imageInfo);
 	skepu::Matrix<unsigned char> outputMatrix(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
+	skepu::Matrix<unsigned char> outputMatrixAvg(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	// more containers...?
 	
 	// Original version
@@ -91,13 +95,15 @@ int main(int argc, char* argv[])
 	// and conv.setOverlap(<integer>)
 	{
 		auto conv = skepu::MapOverlap(average_kernel_1d);
+		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
-			// your code here
+			conv(outputMatrixAvg, inputMatrix, imageInfo.elementsPerPixel);
 		});
 		
-	//	WritePngFileMatrix(outputMatrix, outputFile + "-separable.png", colorType, imageInfo);
+		WritePngFileMatrix(outputMatrix, outputFile + "-separable.png", colorType, imageInfo);
 		std::cout << "Time for separable: " << (timeTaken.count() / 10E6) << "\n";
 	}
 	
