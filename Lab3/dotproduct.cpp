@@ -41,7 +41,7 @@ int main(int argc, const char* argv[])
 // ...
 	
 	/* SkePU containers */
-	skepu::Vector<float> v1(size, 1.0f), v2(size, 2.0f);
+	skepu::Vector<float> v1(size, 1.0f), v2(size, 2.0f), v3(size, 0.0f);
 	
 	
 	/* Compute and measure time */
@@ -49,16 +49,19 @@ int main(int argc, const char* argv[])
 	
 	// MapReduce
 	auto dotProd = skepu::MapReduce<2>(mult, add);
+
 	auto timeComb = skepu::benchmark::measureExecTime([&]
 	{
 		resComb = dotProd(v1, v2);
-		//resComb = 0.0f;
 	});
 	
 	// Map + Reduce
+	auto map = skepu::Map(mult);
+	auto reduce = skepu::Reduce(add);
 	auto timeSep = skepu::benchmark::measureExecTime([&]
 	{
-		resSep = 0.0f;
+		v3 = map(v1, v2);
+		resSep = reduce(v3);
 	});
 	
 	std::cout << "Time Combined: " << (timeComb.count() / 10E6) << " seconds.\n";
