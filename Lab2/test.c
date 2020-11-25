@@ -509,17 +509,6 @@ setbuf(stdout, NULL);
   // Allocate a new stack and reset its values
   stack = malloc(sizeof(stack_t));
 
-#if MEASURE == 1
-  // test_setup();
-
-  // for(int i = 0; i < MAX_PUSH_POP; i++) {
-  //   stack_push(stack, i);
-  // }
-  
-#elif MEASURE == 2
-  //test_setup();
-
-#endif
 
   clock_gettime(CLOCK_MONOTONIC, &start);
   for (i = 0; i < NB_THREADS; i++)

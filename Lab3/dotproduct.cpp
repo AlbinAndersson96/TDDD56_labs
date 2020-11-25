@@ -11,15 +11,15 @@
 
 /* SkePU user functions */
 
-/*
-float userfunction(...)
+float add(float a, float b)
 {
-	// your code here
+	return a+b;
 }
 
-// more user functions...
-
-*/
+float mult(float a, float b)
+{
+	return a*b;
+}
 
 
 int main(int argc, const char* argv[])
@@ -47,11 +47,14 @@ int main(int argc, const char* argv[])
 	/* Compute and measure time */
 	float resComb, resSep;
 	
+	// MapReduce
 	auto timeComb = skepu::benchmark::measureExecTime([&]
 	{
-		// your code here
+		auto dotProd = skepu::MapReduce<2>(mult, add);
+		return dotProd(v1, v2);
 	});
 	
+	// Map + Reduce
 	auto timeSep = skepu::benchmark::measureExecTime([&]
 	{
 		// your code here
