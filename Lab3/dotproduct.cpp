@@ -50,7 +50,7 @@ int main(int argc, const char* argv[])
 	// MapReduce
 	auto timeComb = skepu::benchmark::measureExecTime([&]
 	{
-		//auto dotProd = skepu::MapReduce<2>(mult, add);
+		auto dotProd = skepu::MapReduce<2>(mult, add);
 		//resComb = dotProd(v1, v2);
 		resComb = 0.0f;
 	});
