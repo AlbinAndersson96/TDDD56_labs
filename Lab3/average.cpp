@@ -28,7 +28,7 @@ unsigned char average_kernel(skepu::Region2D<unsigned char> m, size_t elemPerPx)
 
 unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPerPx)
 {
-	std::cout << "m.oi: " << m.oi << std::endl;
+	assert(m.oi == 3);
 	// for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
 		
 	// }
