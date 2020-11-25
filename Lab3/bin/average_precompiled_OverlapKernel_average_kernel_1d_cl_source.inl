@@ -94,12 +94,12 @@ enum {
 
 static unsigned char average_kernel_1d(skepu_region1d_unsigned__space__char m, unsigned long elemPerPx)
 {
-	float nrElements = m.oi/(elemPerPx*2+1);
+	float scaling = 1.0 / (m.oi*(elemPerPx*2+1));
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
 		res += skepu_region_access_1d_unsigned__space__char(m,x);
 	}
-	return res/nrElements;
+	return res * scaling;
 }
 
 
