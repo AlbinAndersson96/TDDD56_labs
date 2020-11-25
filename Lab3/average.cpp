@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 			conv(outputMatrixAvg, inputMatrix, imageInfo.elementsPerPixel);
 		});
 		
-		WritePngFileMatrix(outputMatrix, outputFile + "-separable.png", colorType, imageInfo);
+		WritePngFileMatrix(outputMatrixAvg, outputFile + "-separable.png", colorType, imageInfo);
 		std::cout << "Time for separable: " << (timeTaken.count() / 10E6) << "\n";
 	}
 	
