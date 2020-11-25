@@ -49,8 +49,7 @@ int main(int argc, const char* argv[])
 	
 	// MapReduce
 	auto dotProd = skepu::MapReduce<2>(mult, add);
-
-	auto timeComb = skepu::benchmark::measureExecTime([&]
+	auto timeComb = skepu::benchmark::measureExecTimeIdempotent([&]
 	{
 		resComb = dotProd(v1, v2);
 	});
@@ -58,7 +57,7 @@ int main(int argc, const char* argv[])
 	// Map + Reduce
 	auto map = skepu::Map<2>(mult);
 	auto reduce = skepu::Reduce(add);
-	auto timeSep = skepu::benchmark::measureExecTime([&]
+	auto timeSep = skepu::benchmark::measureExecTimeIdempotent([&]
 	{
 		map(v3, v1, v2);
 		resSep = reduce(v3);

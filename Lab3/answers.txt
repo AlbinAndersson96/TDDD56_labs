@@ -1,0 +1,16 @@
+1.1 Why does SkePU have a "fused" MapReduce?
+    - Reduced memory usage? The combined MapReduce does not have to hold the entire Map result and the both input vectors (as it can map and directly reduce) 
+      You also might get fewer total accesses to the vectors memory since it can do both mapping and reducing together.
+
+    
+1.2 Is there any practical reason to ever use separate Map andReduce in sequence?
+    - If you ever need to save the intermediate answer, using a separate Map + Reduce might be advantagious.
+
+
+1.3 Is there a SkePU backend which is always more efficient to use, or does this depend on the problem size? Why?
+    - It should depend on the problem size, expecially when talking about the GPU-backends. They should be WAY quicker on large problems while on smaller problems they would struggle due to the overhead associated with
+      sending data to and from the device.
+
+1.4 Try measuring the parallel back-ends with measureExecTime exchanged for measureExecTimeIdempotent. This measurement does a "cold run" of the lambda expression before running the proper measurement. 
+    Do you see a difference for some backends, and if so, why?
+    - 
