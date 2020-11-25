@@ -60,7 +60,7 @@ int main(int argc, const char* argv[])
 	auto reduce = skepu::Reduce(add);
 	auto timeSep = skepu::benchmark::measureExecTime([&]
 	{
-		v3 = map(v1, v2);
+		map(v3, v1, v2);
 		resSep = reduce(v3);
 	});
 	
