@@ -322,16 +322,74 @@ test_pop_safe()
 }
 
 // 3 Threads should be enough to raise and detect the ABA problem
-#define ABA_NB_THREADS 3
+#define ABA_NB_THREADS 2
+
+struct thread_test_cas_aba_args
+{
+  freelist_t* fl;
+  stack_t* stack;
+  int id;
+};
+typedef struct thread_test_cas_aba_args thread_test_cas_aba_args_t;
 
 int
 test_aba()
 {
+
 #if NON_BLOCKING == 1 || NON_BLOCKING == 2
   pthread_t thread[ABA_NB_THREADS];
   int success, aba_detected = 0;
   // Write here a test for the ABA problem
+
+  thread_test_cas_aba_args_t args[ABA_NB_THREADS];
+  pthread_attr_t attr;
+  pthread_mutexattr_t mutex_attr;
+  pthread_mutex_t lock;
+
+  size_t counter;
+  int i;
+
+  counter = 0;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); 
+  pthread_mutexattr_init(&mutex_attr);
+  pthread_mutex_init(&lock, &mutex_attr);
+
+  freelist_t *fl = malloc(sizeof(freelist_t));
+  preAllocateNodes(fl, 2);
+
+  stack_push(stack, fl, 1);
+  stack_push(stack, fl, 2); // B will pop this
+  stack_push(stack, fl, 3); // A will point at this and get interrupted mid way -> // B will pop this
+
+  for (i = 0; i < ABA_NB_THREADS; ++i)
+    {
+      args[i].id = i;
+      args[i].stack = stack;
+      args[i].fl = fl;
+
+      // A wants to pop
+      if (i == 0) {
+        pthread_create(&thread[i], &attr, &stack_pop_aba, (void*) &args[i]);
+      }
+
+      if (i == 1) {
+        pthread_create(&thread[i], &attr, &stack_pop_aba, (void*) &args[i]);
+      }
+      
+    }
+
+  for (i = 0; i < ABA_NB_THREADS; i++)
+    {
+      pthread_join(thread[i], NULL);
+    }
+  
+  if (args[0].stack == NULL) aba_detected = 1;
+
   success = aba_detected;
+
+
+
   return success;
 #else
   // No ABA is possible with lock-based synchronization. Let the test succeed only
@@ -347,6 +405,8 @@ struct thread_test_cas_args
   pthread_mutex_t *lock;
 };
 typedef struct thread_test_cas_args thread_test_cas_args_t;
+
+
 
 void*
 thread_test_cas(void* arg)
@@ -432,7 +492,7 @@ setbuf(stdout, NULL);
 
   test_run(test_push_safe);
   test_run(test_pop_safe);
-  //test_run(test_aba);
+  test_run(test_aba);
 
   //test_finalize();
 #else

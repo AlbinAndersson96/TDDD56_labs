@@ -55,6 +55,8 @@
 pthread_mutex_t mutexLock = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t freelistLock = PTHREAD_MUTEX_INITIALIZER;
 
+int lockA = 1;
+
 void addFreeNode(freelist_t* fl, Node* node) {
 
   // For teardown etc
@@ -241,3 +243,132 @@ stack_pop(stack_t* stack, freelist_t* freelist)
   return 0;
 }
 
+int /* Return the type you prefer */
+stack_push_aba(stack_t* stack, freelist_t* fl, int val)
+{
+
+// #if DEBUG == 1
+// printStack(stack);
+// #endif
+
+  Node* new = getFreeNode(fl);  
+  if (new == NULL) {
+    printf("Freelist empty, re-allocating!\n");
+    new = malloc(sizeof(Node)); // chunk malloc
+  }
+
+#if NON_BLOCKING == 1
+  
+  Node *head;
+  do
+  {
+    head = stack->head;
+    
+    new->val = val;
+    new->next = head;
+
+  } while(cas((uintptr_t*)&stack->head, (uintptr_t)head, (uintptr_t)new) != (uintptr_t)head);
+
+  stack->counter++;
+  stack->ops++;
+
+#endif
+
+  // Debug practice: you can check if this operation results in a stack in a consistent check
+  // It doesn't harm performance as sanity check are disabled at measurement time
+  // This is to be updated as your implementation progresses
+  stack_check(stack);
+
+  return 0;
+}
+
+struct thread_test_cas_aba_args
+{
+  freelist_t* fl;
+  stack_t* stack;
+  int id;
+};
+typedef struct thread_test_cas_aba_args thread_test_cas_aba_args_t;
+
+Node *abaA;
+
+int /* Return the type you prefer */
+stack_pop_aba(void* arg)
+{
+
+// #if DEBUG == 1
+//  printStack(stack);
+// #endif
+thread_test_cas_aba_args_t *args = (thread_test_cas_aba_args_t*) arg;
+freelist_t *freelist = args->fl;
+stack_t *stack = args->stack;
+int id = args->id;
+
+printf("ID: %d\n", id);
+
+#if NON_BLOCKING == 1
+
+  // Thread B "regular pop"
+  if (id == 1) {
+    printf("TID: 1 => Popping A\n");
+    Node *head;
+    Node *new;
+    do
+    {
+      head = stack->head;
+      abaA = stack->head;
+      new = head->next;
+    } while(cas((uintptr_t*)&stack->head, (uintptr_t)head, (uintptr_t)new) != (uintptr_t)head);
+  }
+
+  
+    
+  // All threads pop
+  if (id == 1) printf("TID: 1 => Popping B\n");
+  if (id == 0) printf("TID: 0 => Popping A\n");
+  
+  Node *head;
+  Node *new;
+  do
+  {
+
+    head = stack->head;
+    new = head->next;
+
+    // Thread A
+    if (id == 0) {
+      printf("TID: 0 => Stuck in loop until lockA unlocks\n");
+      while (lockA == 1) {
+        // A gets stuck here
+      }
+      printf("TID: 0 => Free from loop, lockA must be 0\n");
+    }
+    
+
+  } while(cas((uintptr_t*)&stack->head, (uintptr_t)head, (uintptr_t)new) != (uintptr_t)head);
+
+  if (id == 1) addFreeNode(freelist, head);
+  
+
+  stack->counter--;
+  stack->ops++;
+
+  stack->head = abaA;
+  if (id == 1) printf("TID: 1 => setting lockA = 0\n ");
+  lockA = 0;
+
+  if (id == 0) {
+    // Check for B in freelist
+    printf("TID: 0 => Checking for ABA\n");
+    if(stack->head->next == freelist->head)
+    {
+      printf("TID: 0 =>ABA Detected\n");
+      args->stack = NULL; // For checking purposes
+      return 1;
+    }
+  }
+
+#endif
+
+  return 0;
+}

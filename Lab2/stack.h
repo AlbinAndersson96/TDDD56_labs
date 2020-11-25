@@ -61,6 +61,9 @@ Node *getFreeNode(freelist_t* fl);
 int stack_push(stack_t *stack, freelist_t* freelist, int val);
 int stack_pop(stack_t *stack, freelist_t* freelist);
 
+int stack_push_aba(stack_t *stack, freelist_t* freelist, int val);
+int stack_pop_aba(void* args);
+
 /* Use this to check if your stack is in a consistent state from time to time */
 int stack_check(stack_t *stack);
 #endif /* STACK_H */
