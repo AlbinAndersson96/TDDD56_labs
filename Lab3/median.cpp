@@ -25,7 +25,7 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[10000];
+	float hold[100000];
 	//std::vector<int> hold(5000); // Prevents allocation
 
 	for (int y = -image.oi; y <= image.oi; ++y)
