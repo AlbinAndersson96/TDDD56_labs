@@ -32,7 +32,7 @@ unsigned char average_kernel(skepu::Region2D<unsigned char> m, size_t elemPerPx)
 
 unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPerPx)
 {
-	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float scaling = 1.0 / ((m.oi/elemPerPx)*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
 		res += m(x);
@@ -233,7 +233,7 @@ constexpr static bool prefersMatrix = 0;
 #define VARIANT_CUDA(block) block
 static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
 {
-	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float scaling = 1.0 / ((m.oi/elemPerPx)*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
 		res += m(x);
@@ -251,7 +251,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 #define VARIANT_CUDA(block)
 static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
 {
-	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float scaling = 1.0 / ((m.oi/elemPerPx)*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
 		res += m(x);
@@ -269,7 +269,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<uns
 #define VARIANT_CUDA(block) block
 static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
 {
-	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float scaling = 1.0 / ((m.oi/elemPerPx)*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
 		res += m(x);
