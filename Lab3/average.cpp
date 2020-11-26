@@ -123,15 +123,20 @@ int main(int argc, char* argv[])
 			
 		// skeleton instance, etc here (remember to set backend)
 		auto conv = skepu::MapOverlap(gaussian_kernel);
-		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlapMode(skepu::Overlap::RowWise);
 		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
+		
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
 			conv(outputMatrixGaus, inputMatrix, stencil, imageInfo.elementsPerPixel);
+
+			conv.setOverlapMode(skepu::Overlap::ColWise);
+			conv.setOverlap(radius);
+			conv(outputMatrix, outputMatrixGaus, stencil, 1);
 		});
 	
-		WritePngFileMatrix(outputMatrixGaus, outputFile + "-gaussian.png", colorType, imageInfo);
+		WritePngFileMatrix(outputMatrix, outputFile + "-gaussian.png", colorType, imageInfo);
 		std::cout << "Time for gaussian: " << (timeTaken.count() / 10E6) << "\n";
 	}
 	
