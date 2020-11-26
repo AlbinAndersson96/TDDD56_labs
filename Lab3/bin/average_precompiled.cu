@@ -30,17 +30,7 @@ unsigned char average_kernel(skepu::Region2D<unsigned char> m, size_t elemPerPx)
 	return res * scaling;
 }
 
-unsigned char average_kernel_1dCOL(skepu::Region1D<unsigned char> m, size_t elemPerPx)
-{
-	float scaling = 1.0 / (m.oi*2+1);
-	float res = 0;
-	for (int y = -m.oi; y <= m.oi; ++y) {
-		res += m(y);
-	}
-	return res * scaling;
-}
-
-unsigned char average_kernel_1dROW(skepu::Region1D<unsigned char> m, size_t elemPerPx)
+unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPerPx)
 {
 	float scaling = 1.0 / ((m.oi/elemPerPx)*2+1);
 	float res = 0;
@@ -213,7 +203,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 #include "average_precompiled_Overlap2DKernel_average_kernel.cu"
 #include "average_precompiled_Overlap2DKernel_average_kernel_cl_source.inl"
 
-struct skepu_userfunction_skepu_skel_2convRow_average_kernel_1dROW
+struct skepu_userfunction_skepu_skel_2conv_average_kernel_1d
 {
 constexpr static size_t totalArity = 2;
 constexpr static size_t outArity = 1;
@@ -285,8 +275,8 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<uns
 #undef SKEPU_USING_BACKEND_CPU
 };
 
-#include "average_precompiled_Overlap1DKernel_average_kernel_1dROW.cu"
-#include "average_precompiled_OverlapKernel_average_kernel_1dROW_cl_source.inl"
+#include "average_precompiled_Overlap1DKernel_average_kernel_1d.cu"
+#include "average_precompiled_OverlapKernel_average_kernel_1d_cl_source.inl"
 int main(int argc, char* argv[])
 {
 	if (argc < 5)
@@ -338,21 +328,17 @@ int main(int argc, char* argv[])
 	// use conv.setOverlapMode(skepu::Overlap::[ColWise RowWise]);
 	// and conv.setOverlap(<integer>)
 	{
-		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_2convRow_average_kernel_1dROW, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1dROW> convRow(average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_ColMulti);
-		convRow.setOverlapMode(skepu::Overlap::RowWise);
-		convRow.setOverlap(radius  * imageInfo.elementsPerPixel);
-
-		//auto convCol = skepu::MapOverlap(average_kernel_1dROW);
-		//convCol.setOverlapMode(skepu::Overlap::ColWise);
-		//convCol.setOverlap(radius);
+		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_2conv_average_kernel_1d, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1d> conv(average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_ColMulti);
+		conv.setOverlapMode(skepu::Overlap::RowWise);
+		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
-			convRow(outputMatrixAvgF, inputMatrix, imageInfo.elementsPerPixel);
+			conv(outputMatrixAvgF, inputMatrix, imageInfo.elementsPerPixel);
 
-			convRow.setOverlapMode(skepu::Overlap::ColWise);
-			convRow.setOverlap(radius);
-			convRow(outputMatrixAvg, outputMatrixAvgF, 1);
+			conv.setOverlapMode(skepu::Overlap::ColWise);
+			conv.setOverlap(radius);
+			conv(outputMatrixAvg, outputMatrixAvgF, 1);
 		});
 		
 		WritePngFileMatrix(outputMatrixAvg, outputFile + "-separable.png", colorType, imageInfo);
@@ -366,15 +352,20 @@ int main(int argc, char* argv[])
 			
 		// skeleton instance, etc here (remember to set backend)
 		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_0conv_gaussian_kernel, decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_gaussian_kernel> conv(average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_ColMulti);
-		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlapMode(skepu::Overlap::RowWise);
 		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
+		
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
 			conv(outputMatrixGaus, inputMatrix, stencil, imageInfo.elementsPerPixel);
+
+			conv.setOverlapMode(skepu::Overlap::ColWise);
+			conv.setOverlap(radius);
+			conv(outputMatrix, outputMatrixGaus, stencil, 1);
 		});
 	
-		WritePngFileMatrix(outputMatrixGaus, outputFile + "-gaussian.png", colorType, imageInfo);
+		WritePngFileMatrix(outputMatrix, outputFile + "-gaussian.png", colorType, imageInfo);
 		std::cout << "Time for gaussian: " << (timeTaken.count() / 10E6) << "\n";
 	}
 	
