@@ -83,27 +83,33 @@ enum {
 	SKEPU_EDGE_PAD = 3,
 };
 
+static void pr(int i, int j)
+{
+	printf("i: %d, j: %d\n", i, j);
+}
+
 static unsigned char median_kernel(skepu_region2d_unsigned__space__char image, unsigned long elemPerPx)
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[10000];
+	float hold[100000];
 	//std::vector<int> hold(5000); // Prevents allocation
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = skepu_region_access_2d_unsigned__space__char(image,y, x);
 
-    // for (int i = 0; i < arrCounter; ++i) {  
-	// 	for (int j = 0; j < arrCounter-i-1; ++j) {
-	// 		if (hold[j] > hold[j+1]) {
-	// 			float temp = hold[j];  
-	// 			hold[j] = hold[j+1];  
-	// 			hold[j+1] = temp;
-	// 		}
-	// 	}
-			
-	// }
+    for (int i = 0; i < arrCounter-1; ++i) {  
+		pr(i, 0);
+		for (int j = i+1; j < arrCounter-1; ++j) {
+			if (hold[j] > hold[j+1]) {
+				
+				float temp = hold[j];  
+				hold[j] = hold[j+1];  
+				hold[j+1] = temp;
+			}
+		}
+	}
 
 	return hold[(arrCounter+1)/2];
 }
