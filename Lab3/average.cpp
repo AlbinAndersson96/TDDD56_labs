@@ -98,12 +98,17 @@ int main(int argc, char* argv[])
 	// and conv.setOverlap(<integer>)
 	{
 		auto conv = skepu::MapOverlap(average_kernel_1d);
-		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlapMode(skepu::Overlap::ColWise);
 		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
 			conv(outputMatrixAvg, inputMatrix, imageInfo.elementsPerPixel);
+
+			conv.setOverlap(radius);
+			conv.setOverlapMode(skepu::Overlap::RowWise);
+			conv(outputMatrixAvg, outputMatrixAvg, 1);
+
 		});
 		
 		WritePngFileMatrix(outputMatrixAvg, outputFile + "-separable.png", colorType, imageInfo);
