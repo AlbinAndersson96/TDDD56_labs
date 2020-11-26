@@ -29,24 +29,23 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[1000];
+	float hold[10000];
 	//std::vector<int> hold(5000); // Prevents allocation
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
-	int i, j;  
-    for (i = 0; i < arrCounter; i++) {  
-		for (j = 0; j < arrCounter-i-1; j++) {
-			if (hold[j] > hold[j+1]) {
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
-				hold[j+1] = temp;
-			}
-		}
+    // for (int i = 0; i < arrCounter; ++i) {  
+	// 	for (int j = 0; j < arrCounter-i-1; ++j) {
+	// 		if (hold[j] > hold[j+1]) {
+	// 			float temp = hold[j];  
+	// 			hold[j] = hold[j+1];  
+	// 			hold[j+1] = temp;
+	// 		}
+	// 	}
 			
-	}
+	// }
 
 	return hold[(arrCounter+1)/2];
 }
@@ -80,24 +79,23 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[1000];
+	float hold[10000];
 	//std::vector<int> hold(5000); // Prevents allocation
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
-	int i, j;  
-    for (i = 0; i < arrCounter; i++) {  
-		for (j = 0; j < arrCounter-i-1; j++) {
-			if (hold[j] > hold[j+1]) {
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
-				hold[j+1] = temp;
-			}
-		}
+    // for (int i = 0; i < arrCounter; ++i) {  
+	// 	for (int j = 0; j < arrCounter-i-1; ++j) {
+	// 		if (hold[j] > hold[j+1]) {
+	// 			float temp = hold[j];  
+	// 			hold[j] = hold[j+1];  
+	// 			hold[j+1] = temp;
+	// 		}
+	// 	}
 			
-	}
+	// }
 
 	return hold[(arrCounter+1)/2];
 }
@@ -114,24 +112,23 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region2D<uns
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[1000];
+	float hold[10000];
 	//std::vector<int> hold(5000); // Prevents allocation
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
-	int i, j;  
-    for (i = 0; i < arrCounter; i++) {  
-		for (j = 0; j < arrCounter-i-1; j++) {
-			if (hold[j] > hold[j+1]) {
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
-				hold[j+1] = temp;
-			}
-		}
+    // for (int i = 0; i < arrCounter; ++i) {  
+	// 	for (int j = 0; j < arrCounter-i-1; ++j) {
+	// 		if (hold[j] > hold[j+1]) {
+	// 			float temp = hold[j];  
+	// 			hold[j] = hold[j+1];  
+	// 			hold[j+1] = temp;
+	// 		}
+	// 	}
 			
-	}
+	// }
 
 	return hold[(arrCounter+1)/2];
 }
@@ -148,24 +145,23 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[1000];
+	float hold[10000];
 	//std::vector<int> hold(5000); // Prevents allocation
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
-	int i, j;  
-    for (i = 0; i < arrCounter; i++) {  
-		for (j = 0; j < arrCounter-i-1; j++) {
-			if (hold[j] > hold[j+1]) {
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
-				hold[j+1] = temp;
-			}
-		}
+    // for (int i = 0; i < arrCounter; ++i) {  
+	// 	for (int j = 0; j < arrCounter-i-1; ++j) {
+	// 		if (hold[j] > hold[j+1]) {
+	// 			float temp = hold[j];  
+	// 			hold[j] = hold[j+1];  
+	// 			hold[j+1] = temp;
+	// 		}
+	// 	}
 			
-	}
+	// }
 
 	return hold[(arrCounter+1)/2];
 }
