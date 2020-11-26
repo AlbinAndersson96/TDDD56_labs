@@ -39,11 +39,13 @@ unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPer
 
 unsigned char gaussian_kernel(skepu::Region1D<unsigned char> m, const skepu::Vec<float> stencil, size_t elemPerPx)
 {
-	// your code here
-	return m(0);
+	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float res = 0;
+	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
+		res += m(x) * stencil(static_cast<size_t>(x));
+	}
+	return res * scaling;
 }
-
-
 
 
 int main(int argc, char* argv[])
@@ -73,6 +75,7 @@ int main(int argc, char* argv[])
 	skepu::Matrix<unsigned char> inputMatrix = ReadPngFileToMatrix(inputFileName, colorType, imageInfo);
 	skepu::Matrix<unsigned char> outputMatrix(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	skepu::Matrix<unsigned char> outputMatrixAvg(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
+	skepu::Matrix<unsigned char> outputMatrixGaus(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	// more containers...?
 	
 	// Original version
@@ -95,7 +98,7 @@ int main(int argc, char* argv[])
 	// and conv.setOverlap(<integer>)
 	{
 		auto conv = skepu::MapOverlap(average_kernel_1d);
-		conv.setOverlapMode(skepu::Overlap::RowColWise);
+		conv.setOverlapMode(skepu::Overlap::ColRowWise);
 		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
@@ -113,13 +116,16 @@ int main(int argc, char* argv[])
 		skepu::Vector<float> stencil = sampleGaussian(radius);
 			
 		// skeleton instance, etc here (remember to set backend)
+		auto conv = skepu::MapOverlap(gaussian_kernel);
+		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
-			// your code here
+			conv(outputMatrixGaus, inputMatrixPad, stencil, imageInfo.elementsPerPixel);
 		});
 	
-	//	WritePngFileMatrix(outputMatrix, outputFile + "-gaussian.png", colorType, imageInfo);
+		WritePngFileMatrix(outputMatrixGaus, outputFile + "-gaussian.png", colorType, imageInfo);
 		std::cout << "Time for gaussian: " << (timeTaken.count() / 10E6) << "\n";
 	}
 	
