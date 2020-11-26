@@ -13,6 +13,7 @@
 #include <iterator>
 //#include <array>
 //#include <vector>
+#include <cmath>
 #include <algorithm>
 
 #include <skepu>
@@ -31,12 +32,23 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
-	std::sort(std::begin(hold), std::end(hold));
+	int i, j;  
+    for (i = 0; i < arrCounter; i++) {  
+		for (j = 0; j < arrCounter-i-1; j++) {
+			if (hold[j] > hold[j+1]) {
+				float temp = hold[j];  
+				hold[j] = hold[j+1];  
+				hold[j+1] = temp;
+			}
+		}
+			
+	}
 
-	return image(0,0);
+	int floorIndex = floor((arrCounter+1)/2);
+	int ceilIndex = ceil((arrCounter+1)/2);
+
+	return (hold[floorIndex] + hold[ceilIndex]) / 2.0f;
 }
-
-
 
 int main(int argc, char* argv[])
 {
