@@ -74,7 +74,9 @@ int main(int argc, char* argv[])
 	skepu::Matrix<unsigned char> inputMatrixPad = ReadAndPadPngFileToMatrix(inputFileName, radius, colorType, imageInfo);
 	skepu::Matrix<unsigned char> inputMatrix = ReadPngFileToMatrix(inputFileName, colorType, imageInfo);
 	skepu::Matrix<unsigned char> outputMatrix(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
+	skepu::Matrix<unsigned char> outputMatrixAvgF(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	skepu::Matrix<unsigned char> outputMatrixAvg(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
+
 	skepu::Matrix<unsigned char> outputMatrixGaus(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	// more containers...?
 	
@@ -97,18 +99,18 @@ int main(int argc, char* argv[])
 	// use conv.setOverlapMode(skepu::Overlap::[ColWise RowWise]);
 	// and conv.setOverlap(<integer>)
 	{
-		auto conv = skepu::MapOverlap(average_kernel_1d);
-		conv.setOverlapMode(skepu::Overlap::ColWise);
-		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
+		auto convRow = skepu::MapOverlap(average_kernel_1d);
+		convRow.setOverlapMode(skepu::Overlap::RowWise);
+		convRow.setOverlap(radius  * imageInfo.elementsPerPixel);
+
+		auto convCol = skepu::MapOverlap(average_kernel_1d);
+		convCol.setOverlapMode(skepu::Overlap::ColWise);
+		convCol.setOverlap(radius);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
-			conv(outputMatrixAvg, inputMatrix, imageInfo.elementsPerPixel);
-
-			conv.setOverlap(radius);
-			conv.setOverlapMode(skepu::Overlap::RowWise);
-			conv(outputMatrixAvg, outputMatrixAvg, 1);
-
+			convRow(outputMatrixAvgF, inputMatrix, imageInfo.elementsPerPixel);
+			convCol(outputMatrixAvg, outputMatrixAvgF, imageInfo.elementsPerPixel);
 		});
 		
 		WritePngFileMatrix(outputMatrixAvg, outputFile + "-separable.png", colorType, imageInfo);
