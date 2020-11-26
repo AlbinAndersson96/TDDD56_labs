@@ -138,82 +138,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<uns
 #include "average_precompiled_Overlap1DKernel_gaussian_kernel.cu"
 #include "average_precompiled_OverlapKernel_gaussian_kernel_cl_source.inl"
 
-struct skepu_userfunction_skepu_skel_1convCol_average_kernel_1dCOL
-{
-constexpr static size_t totalArity = 2;
-constexpr static size_t outArity = 1;
-constexpr static bool indexed = 0;
-using IndexType = void;
-using ElwiseArgs = std::tuple<>;
-using ContainerArgs = std::tuple<>;
-using UniformArgs = std::tuple<unsigned long>;
-typedef std::tuple<> ProxyTags;
-constexpr static skepu::AccessMode anyAccessMode[] = {
-};
-
-using Ret = unsigned char;
-
-constexpr static bool prefersMatrix = 0;
-
-#define SKEPU_USING_BACKEND_CUDA 1
-#undef VARIANT_CPU
-#undef VARIANT_OPENMP
-#undef VARIANT_CUDA
-#define VARIANT_CPU(block)
-#define VARIANT_OPENMP(block)
-#define VARIANT_CUDA(block) block
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
-{
-	float scaling = 1.0 / (m.oi*2+1);
-	float res = 0;
-	for (int y = -m.oi; y <= m.oi; ++y) {
-		res += m(y);
-	}
-	return res * scaling;
-}
-#undef SKEPU_USING_BACKEND_CUDA
-
-#define SKEPU_USING_BACKEND_OMP 1
-#undef VARIANT_CPU
-#undef VARIANT_OPENMP
-#undef VARIANT_CUDA
-#define VARIANT_CPU(block)
-#define VARIANT_OPENMP(block) block
-#define VARIANT_CUDA(block)
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
-{
-	float scaling = 1.0 / (m.oi*2+1);
-	float res = 0;
-	for (int y = -m.oi; y <= m.oi; ++y) {
-		res += m(y);
-	}
-	return res * scaling;
-}
-#undef SKEPU_USING_BACKEND_OMP
-
-#define SKEPU_USING_BACKEND_CPU 1
-#undef VARIANT_CPU
-#undef VARIANT_OPENMP
-#undef VARIANT_CUDA
-#define VARIANT_CPU(block) block
-#define VARIANT_OPENMP(block)
-#define VARIANT_CUDA(block) block
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
-{
-	float scaling = 1.0 / (m.oi*2+1);
-	float res = 0;
-	for (int y = -m.oi; y <= m.oi; ++y) {
-		res += m(y);
-	}
-	return res * scaling;
-}
-#undef SKEPU_USING_BACKEND_CPU
-};
-
-#include "average_precompiled_Overlap1DKernel_average_kernel_1dCOL.cu"
-#include "average_precompiled_OverlapKernel_average_kernel_1dCOL_cl_source.inl"
-
-struct skepu_userfunction_skepu_skel_2conv_average_kernel
+struct skepu_userfunction_skepu_skel_1conv_average_kernel
 {
 constexpr static size_t totalArity = 2;
 constexpr static size_t outArity = 1;
@@ -288,7 +213,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 #include "average_precompiled_Overlap2DKernel_average_kernel.cu"
 #include "average_precompiled_Overlap2DKernel_average_kernel_cl_source.inl"
 
-struct skepu_userfunction_skepu_skel_3convRow_average_kernel_1dROW
+struct skepu_userfunction_skepu_skel_2convRow_average_kernel_1dROW
 {
 constexpr static size_t totalArity = 2;
 constexpr static size_t outArity = 1;
@@ -396,7 +321,7 @@ int main(int argc, char* argv[])
 	
 	// Original version
 	{
-		skepu::backend::MapOverlap2D<skepu_userfunction_skepu_skel_2conv_average_kernel, decltype(&average_precompiled_Overlap2DKernel_average_kernel_conv_cuda_2D_kernel), CLWrapperClass_average_precompiled_Overlap2DKernel_average_kernel> conv(average_precompiled_Overlap2DKernel_average_kernel_conv_cuda_2D_kernel);
+		skepu::backend::MapOverlap2D<skepu_userfunction_skepu_skel_1conv_average_kernel, decltype(&average_precompiled_Overlap2DKernel_average_kernel_conv_cuda_2D_kernel), CLWrapperClass_average_precompiled_Overlap2DKernel_average_kernel> conv(average_precompiled_Overlap2DKernel_average_kernel_conv_cuda_2D_kernel);
 		conv.setOverlap(radius, radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
@@ -413,18 +338,21 @@ int main(int argc, char* argv[])
 	// use conv.setOverlapMode(skepu::Overlap::[ColWise RowWise]);
 	// and conv.setOverlap(<integer>)
 	{
-		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_3convRow_average_kernel_1dROW, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1dROW> convRow(average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_ColMulti);
+		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_2convRow_average_kernel_1dROW, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1dROW> convRow(average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1dROW_MapOverlapKernel_CU_Matrix_ColMulti);
 		convRow.setOverlapMode(skepu::Overlap::RowWise);
 		convRow.setOverlap(radius  * imageInfo.elementsPerPixel);
 
-		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_1convCol_average_kernel_1dCOL, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1dCOL> convCol(average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1dCOL_MapOverlapKernel_CU_Matrix_ColMulti);
-		convCol.setOverlapMode(skepu::Overlap::ColWise);
-		convCol.setOverlap(radius);
+		//auto convCol = skepu::MapOverlap(average_kernel_1dROW);
+		//convCol.setOverlapMode(skepu::Overlap::ColWise);
+		//convCol.setOverlap(radius);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
 			convRow(outputMatrixAvgF, inputMatrix, imageInfo.elementsPerPixel);
-			convCol(outputMatrixAvg, outputMatrixAvgF, imageInfo.elementsPerPixel);
+
+			convRow.setOverlapMode(skepu::Overlap::ColWise);
+			convRow.setOverlap(radius);
+			convRow(outputMatrixAvg, outputMatrixAvgF, 1);
 		});
 		
 		WritePngFileMatrix(outputMatrixAvg, outputFile + "-separable.png", colorType, imageInfo);
