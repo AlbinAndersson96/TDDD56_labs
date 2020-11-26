@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
 	// and conv.setOverlap(<integer>)
 	{
 		auto conv = skepu::MapOverlap(average_kernel_1d);
-		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlapMode(skepu::Overlap::RowColWise);
 		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
