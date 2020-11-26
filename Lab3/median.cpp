@@ -21,7 +21,7 @@
 #include "support.h"
 
 void pr(int i, int j) {
-	printf("i: %d, j: %d", i, j);
+	printf("i: %d, j: %d\n", i, j);
 }
 
 unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPerPx)
