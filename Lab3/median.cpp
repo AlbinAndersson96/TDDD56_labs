@@ -32,7 +32,7 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
-    for (int i = 0; i < arrCounter; ++i) {  
+    for (int i = 0; i < arrCounter-1; ++i) {  
 		for (int j = 0; j < arrCounter-i-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				float temp = hold[j];  
