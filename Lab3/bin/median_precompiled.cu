@@ -15,6 +15,10 @@
 #include <sstream>
 #include <time.h>
 #include <iterator>
+//#include <array>
+//#include <vector>
+#include <cmath>
+#include <algorithm>
 
 #include <skepu>
 
@@ -23,11 +27,29 @@
 
 unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPerPx)
 {
-	// your code here
-	return image(0,0);
+	float res = 0;
+	int arrCounter = 0;
+	float hold[1000];
+	//std::vector<int> hold(5000); // Prevents allocation
+
+	for (int y = -image.oi; y <= image.oi; ++y)
+		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
+			hold[arrCounter++] = image(y, x);
+
+	int i, j;  
+    for (i = 0; i < arrCounter; i++) {  
+		for (j = 0; j < arrCounter-i-1; j++) {
+			if (hold[j] > hold[j+1]) {
+				float temp = hold[j];  
+				hold[j] = hold[j+1];  
+				hold[j+1] = temp;
+			}
+		}
+			
+	}
+
+	return hold[(arrCounter+1)/2];
 }
-
-
 
 
 struct skepu_userfunction_skepu_skel_0calculateMedian_median_kernel
@@ -56,8 +78,28 @@ constexpr static bool prefersMatrix = 0;
 #define VARIANT_CUDA(block) block
 static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Region2D<unsigned char> image, unsigned long elemPerPx)
 {
-	// your code here
-	return image(0,0);
+	float res = 0;
+	int arrCounter = 0;
+	float hold[1000];
+	//std::vector<int> hold(5000); // Prevents allocation
+
+	for (int y = -image.oi; y <= image.oi; ++y)
+		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
+			hold[arrCounter++] = image(y, x);
+
+	int i, j;  
+    for (i = 0; i < arrCounter; i++) {  
+		for (j = 0; j < arrCounter-i-1; j++) {
+			if (hold[j] > hold[j+1]) {
+				float temp = hold[j];  
+				hold[j] = hold[j+1];  
+				hold[j+1] = temp;
+			}
+		}
+			
+	}
+
+	return hold[(arrCounter+1)/2];
 }
 #undef SKEPU_USING_BACKEND_CUDA
 
@@ -70,8 +112,28 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 #define VARIANT_CUDA(block)
 static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region2D<unsigned char> image, unsigned long elemPerPx)
 {
-	// your code here
-	return image(0,0);
+	float res = 0;
+	int arrCounter = 0;
+	float hold[1000];
+	//std::vector<int> hold(5000); // Prevents allocation
+
+	for (int y = -image.oi; y <= image.oi; ++y)
+		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
+			hold[arrCounter++] = image(y, x);
+
+	int i, j;  
+    for (i = 0; i < arrCounter; i++) {  
+		for (j = 0; j < arrCounter-i-1; j++) {
+			if (hold[j] > hold[j+1]) {
+				float temp = hold[j];  
+				hold[j] = hold[j+1];  
+				hold[j+1] = temp;
+			}
+		}
+			
+	}
+
+	return hold[(arrCounter+1)/2];
 }
 #undef SKEPU_USING_BACKEND_OMP
 
@@ -84,8 +146,28 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region2D<uns
 #define VARIANT_CUDA(block) block
 static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<unsigned char> image, unsigned long elemPerPx)
 {
-	// your code here
-	return image(0,0);
+	float res = 0;
+	int arrCounter = 0;
+	float hold[1000];
+	//std::vector<int> hold(5000); // Prevents allocation
+
+	for (int y = -image.oi; y <= image.oi; ++y)
+		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
+			hold[arrCounter++] = image(y, x);
+
+	int i, j;  
+    for (i = 0; i < arrCounter; i++) {  
+		for (j = 0; j < arrCounter-i-1; j++) {
+			if (hold[j] > hold[j+1]) {
+				float temp = hold[j];  
+				hold[j] = hold[j+1];  
+				hold[j+1] = temp;
+			}
+		}
+			
+	}
+
+	return hold[(arrCounter+1)/2];
 }
 #undef SKEPU_USING_BACKEND_CPU
 };
