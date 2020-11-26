@@ -34,6 +34,6 @@ __global__ void average_precompiled_Overlap2DKernel_average_kernel_conv_cuda_2D_
 	__syncthreads();
 
 	if (x < out_cols && y < out_rows)
-		output[y*out_pitch+x] = skepu_userfunction_skepu_skel_1conv_average_kernel::CU({(int)overlap_x, (int)overlap_y,
+		output[y*out_pitch+x] = skepu_userfunction_skepu_skel_2conv_average_kernel::CU({(int)overlap_x, (int)overlap_y,
 			sharedCols, &sdata[(threadIdx.y + overlap_y) * sharedCols + (threadIdx.x + overlap_x)]} , elemPerPx);
 }
