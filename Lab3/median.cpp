@@ -44,10 +44,7 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 			
 	}
 
-	int floorIndex = floor((arrCounter+1)/2);
-	int ceilIndex = ceil((arrCounter+1)/2);
-
-	return (hold[floorIndex] + hold[ceilIndex]) / 2.0f;
+	return hold[(arrCounter+1)/2];
 }
 
 int main(int argc, char* argv[])
