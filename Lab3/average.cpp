@@ -26,7 +26,17 @@ unsigned char average_kernel(skepu::Region2D<unsigned char> m, size_t elemPerPx)
 	return res * scaling;
 }
 
-unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPerPx)
+unsigned char average_kernel_1dCOL(skepu::Region1D<unsigned char> m, size_t elemPerPx)
+{
+	float scaling = 1.0 / (m.oi*2+1);
+	float res = 0;
+	for (int y = -m.oi; y <= m.oi; ++y) {
+		res += m(y);
+	}
+	return res * scaling;
+}
+
+unsigned char average_kernel_1dROW(skepu::Region1D<unsigned char> m, size_t elemPerPx)
 {
 	float scaling = 1.0 / ((m.oi/elemPerPx)*2+1);
 	float res = 0;
@@ -99,11 +109,11 @@ int main(int argc, char* argv[])
 	// use conv.setOverlapMode(skepu::Overlap::[ColWise RowWise]);
 	// and conv.setOverlap(<integer>)
 	{
-		auto convRow = skepu::MapOverlap(average_kernel_1d);
+		auto convRow = skepu::MapOverlap(average_kernel_1dROW);
 		convRow.setOverlapMode(skepu::Overlap::RowWise);
 		convRow.setOverlap(radius  * imageInfo.elementsPerPixel);
 
-		auto convCol = skepu::MapOverlap(average_kernel_1d);
+		auto convCol = skepu::MapOverlap(average_kernel_1dCOL);
 		convCol.setOverlapMode(skepu::Overlap::ColWise);
 		convCol.setOverlap(radius);
 	
