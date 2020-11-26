@@ -43,26 +43,28 @@ unsigned char average_kernel_1d(skepu::Region1D<unsigned char> m, size_t elemPer
 
 unsigned char gaussian_kernel(skepu::Region1D<unsigned char> m, const skepu::Vec<float> stencil, size_t elemPerPx)
 {
-	// your code here
-	return m(0);
+	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float res = 0;
+	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
+		res += m(x) * stencil(x);
+	}
+	return res * scaling;
 }
 
 
 
-
-
-struct skepu_userfunction_skepu_skel_0conv_average_kernel_1d
+struct skepu_userfunction_skepu_skel_0conv_gaussian_kernel
 {
-constexpr static size_t totalArity = 2;
+constexpr static size_t totalArity = 3;
 constexpr static size_t outArity = 1;
 constexpr static bool indexed = 0;
 using IndexType = void;
 using ElwiseArgs = std::tuple<>;
-using ContainerArgs = std::tuple<>;
+using ContainerArgs = std::tuple<const skepu::Vec<float>>;
 using UniformArgs = std::tuple<unsigned long>;
-typedef std::tuple<> ProxyTags;
+typedef std::tuple<skepu::ProxyTag::Default> ProxyTags;
 constexpr static skepu::AccessMode anyAccessMode[] = {
-};
+skepu::AccessMode::Read, };
 
 using Ret = unsigned char;
 
@@ -75,12 +77,12 @@ constexpr static bool prefersMatrix = 0;
 #define VARIANT_CPU(block)
 #define VARIANT_OPENMP(block)
 #define VARIANT_CUDA(block) block
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
+static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Region1D<unsigned char> m, const skepu::Vec<float> stencil, unsigned long elemPerPx)
 {
 	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
-		res += m(x);
+		res += m(x) * stencil(x);
 	}
 	return res * scaling;
 }
@@ -93,12 +95,12 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 #define VARIANT_CPU(block)
 #define VARIANT_OPENMP(block) block
 #define VARIANT_CUDA(block)
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
+static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<unsigned char> m, const skepu::Vec<float> stencil, unsigned long elemPerPx)
 {
 	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
-		res += m(x);
+		res += m(x) * stencil(x);
 	}
 	return res * scaling;
 }
@@ -111,20 +113,20 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<uns
 #define VARIANT_CPU(block) block
 #define VARIANT_OPENMP(block)
 #define VARIANT_CUDA(block) block
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
+static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<unsigned char> m, const skepu::Vec<float> stencil, unsigned long elemPerPx)
 {
 	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
-		res += m(x);
+		res += m(x) * stencil(x);
 	}
 	return res * scaling;
 }
 #undef SKEPU_USING_BACKEND_CPU
 };
 
-#include "average_precompiled_Overlap1DKernel_average_kernel_1d.cu"
-#include "average_precompiled_OverlapKernel_average_kernel_1d_cl_source.inl"
+#include "average_precompiled_Overlap1DKernel_gaussian_kernel.cu"
+#include "average_precompiled_OverlapKernel_gaussian_kernel_cl_source.inl"
 
 struct skepu_userfunction_skepu_skel_1conv_average_kernel
 {
@@ -200,6 +202,81 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 
 #include "average_precompiled_Overlap2DKernel_average_kernel.cu"
 #include "average_precompiled_Overlap2DKernel_average_kernel_cl_source.inl"
+
+struct skepu_userfunction_skepu_skel_2conv_average_kernel_1d
+{
+constexpr static size_t totalArity = 2;
+constexpr static size_t outArity = 1;
+constexpr static bool indexed = 0;
+using IndexType = void;
+using ElwiseArgs = std::tuple<>;
+using ContainerArgs = std::tuple<>;
+using UniformArgs = std::tuple<unsigned long>;
+typedef std::tuple<> ProxyTags;
+constexpr static skepu::AccessMode anyAccessMode[] = {
+};
+
+using Ret = unsigned char;
+
+constexpr static bool prefersMatrix = 0;
+
+#define SKEPU_USING_BACKEND_CUDA 1
+#undef VARIANT_CPU
+#undef VARIANT_OPENMP
+#undef VARIANT_CUDA
+#define VARIANT_CPU(block)
+#define VARIANT_OPENMP(block)
+#define VARIANT_CUDA(block) block
+static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
+{
+	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float res = 0;
+	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
+		res += m(x);
+	}
+	return res * scaling;
+}
+#undef SKEPU_USING_BACKEND_CUDA
+
+#define SKEPU_USING_BACKEND_OMP 1
+#undef VARIANT_CPU
+#undef VARIANT_OPENMP
+#undef VARIANT_CUDA
+#define VARIANT_CPU(block)
+#define VARIANT_OPENMP(block) block
+#define VARIANT_CUDA(block)
+static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
+{
+	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float res = 0;
+	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
+		res += m(x);
+	}
+	return res * scaling;
+}
+#undef SKEPU_USING_BACKEND_OMP
+
+#define SKEPU_USING_BACKEND_CPU 1
+#undef VARIANT_CPU
+#undef VARIANT_OPENMP
+#undef VARIANT_CUDA
+#define VARIANT_CPU(block) block
+#define VARIANT_OPENMP(block)
+#define VARIANT_CUDA(block) block
+static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region1D<unsigned char> m, unsigned long elemPerPx)
+{
+	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
+	float res = 0;
+	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
+		res += m(x);
+	}
+	return res * scaling;
+}
+#undef SKEPU_USING_BACKEND_CPU
+};
+
+#include "average_precompiled_Overlap1DKernel_average_kernel_1d.cu"
+#include "average_precompiled_OverlapKernel_average_kernel_1d_cl_source.inl"
 int main(int argc, char* argv[])
 {
 	if (argc < 5)
@@ -227,6 +304,7 @@ int main(int argc, char* argv[])
 	skepu::Matrix<unsigned char> inputMatrix = ReadPngFileToMatrix(inputFileName, colorType, imageInfo);
 	skepu::Matrix<unsigned char> outputMatrix(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	skepu::Matrix<unsigned char> outputMatrixAvg(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
+	skepu::Matrix<unsigned char> outputMatrixGaus(imageInfo.height, imageInfo.width * imageInfo.elementsPerPixel, 120);
 	// more containers...?
 	
 	// Original version
@@ -248,8 +326,8 @@ int main(int argc, char* argv[])
 	// use conv.setOverlapMode(skepu::Overlap::[ColWise RowWise]);
 	// and conv.setOverlap(<integer>)
 	{
-		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_0conv_average_kernel_1d, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1d> conv(average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_ColMulti);
-		conv.setOverlapMode(skepu::Overlap::RowColWise);
+		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_2conv_average_kernel_1d, decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_average_kernel_1d> conv(average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_ColMulti);
+		conv.setOverlapMode(skepu::Overlap::ColRowWise);
 		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
@@ -267,13 +345,16 @@ int main(int argc, char* argv[])
 		skepu::Vector<float> stencil = sampleGaussian(radius);
 			
 		// skeleton instance, etc here (remember to set backend)
+		skepu::backend::MapOverlap1D<skepu_userfunction_skepu_skel_0conv_gaussian_kernel, decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU), decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Row), decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Col), decltype(&average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_ColMulti), CLWrapperClass_average_precompiled_OverlapKernel_gaussian_kernel> conv(average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU, average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Row, average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_Col, average_precompiled_Overlap1DKernel_gaussian_kernel_MapOverlapKernel_CU_Matrix_ColMulti);
+		conv.setOverlapMode(skepu::Overlap::ColRowWise);
+		conv.setOverlap(radius  * imageInfo.elementsPerPixel);
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
-			// your code here
+			conv(outputMatrixGaus, inputMatrix, stencil, imageInfo.elementsPerPixel);
 		});
 	
-	//	WritePngFileMatrix(outputMatrix, outputFile + "-gaussian.png", colorType, imageInfo);
+		WritePngFileMatrix(outputMatrixGaus, outputFile + "-gaussian.png", colorType, imageInfo);
 		std::cout << "Time for gaussian: " << (timeTaken.count() / 10E6) << "\n";
 	}
 	

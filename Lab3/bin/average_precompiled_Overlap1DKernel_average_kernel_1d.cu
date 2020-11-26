@@ -71,7 +71,7 @@ __global__ void average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlap
 
       //Compute and store data
       if( (i >= out_offset) && (i < out_offset+out_numelements) )
-      	 output[i-out_offset] = skepu_userfunction_skepu_skel_0conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
+      	 output[i-out_offset] = skepu_userfunction_skepu_skel_2conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
 
       i += gridSize;
 
@@ -156,7 +156,7 @@ __global__ void average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlap
 
    //Compute and store data
    if( (i >= out_offset) && (i < out_offset+out_numelements) )
-   	output[i-out_offset] = skepu_userfunction_skepu_skel_0conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
+   	output[i-out_offset] = skepu_userfunction_skepu_skel_2conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
 }
 
 __global__ void average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlapKernel_CU_Matrix_Col(
@@ -238,7 +238,7 @@ __global__ void average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlap
    //Compute and store data
    if( (arrInd >= out_offset) && (arrInd < out_offset+out_numelements) )
    {
-      output[arrInd-out_offset] = skepu_userfunction_skepu_skel_0conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
+      output[arrInd-out_offset] = skepu_userfunction_skepu_skel_2conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
    }
 }
 
@@ -389,6 +389,6 @@ __global__ void average_precompiled_Overlap1DKernel_average_kernel_1d_MapOverlap
    //Compute and store data
    if( arrInd < out_numelements )
    {
-      output[arrInd] = skepu_userfunction_skepu_skel_0conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
+      output[arrInd] = skepu_userfunction_skepu_skel_2conv_average_kernel_1d::CU({(int)overlap, 1, &sdata[tid + overlap]} , elemPerPx);
    }
 }
