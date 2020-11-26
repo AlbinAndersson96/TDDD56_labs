@@ -11,6 +11,9 @@
 #include <sstream>
 #include <time.h>
 #include <iterator>
+#include <array>
+#include <vector>
+#include <algorithm>
 
 #include <skepu>
 
@@ -19,7 +22,17 @@
 
 unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPerPx)
 {
-	// your code here
+	float res = 0;
+	int arrCounter = 0;
+	std::array<float, 1000> hold;
+	//std::vector<int> hold(5000); // Prevents allocation
+
+	for (int y = -image.oi; y <= image.oi; ++y)
+		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
+			hold[arrCounter++] = image(y, x);
+
+	std::sort(std::begin(hold), std::end(hold));
+
 	return image(0,0);
 }
 

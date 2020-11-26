@@ -13,3 +13,6 @@
 
 1.4 Try measuring the parallel back-ends with measureExecTime exchanged for measureExecTimeIdempotent. This measurement does a "cold run" of the lambda expression before running the proper measurement. Do you see a difference for some backends, and if so, why?
     - All backends were faster with measureExecTimeIdempotent as compared to measureExecTime. However CPU and OpenMP had pretty much the same time as before in the separate-test while showing great improvements in the MapReduce one.
+
+2.1 Which version of the averaging filter (unified, separable) is the most efficient? Why?
+    - The separable version has a simpler mathematical expression to calculate which also means that in this case, it is faster/more efficient to compute.
