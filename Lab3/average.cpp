@@ -42,7 +42,7 @@ unsigned char gaussian_kernel(skepu::Region1D<unsigned char> m, const skepu::Vec
 	float scaling = 1.0 / (m.oi/elemPerPx*2+1);
 	float res = 0;
 	for (int x = -m.oi; x <= m.oi; x += elemPerPx) {
-		res += m(x) * stencil(static_cast<size_t>(x));
+		res += m(x) * stencil(x);
 	}
 	return res * scaling;
 }
