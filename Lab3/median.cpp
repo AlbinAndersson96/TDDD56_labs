@@ -20,6 +20,9 @@
 
 #include "support.h"
 
+void pr(int i, int j) {
+	printf("i: %d, j: %d", i, j);
+}
 
 unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPerPx)
 {
@@ -35,6 +38,7 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
     for (int i = 0; i < arrCounter-1; ++i) {  
 		for (int j = i+1; j < arrCounter-1; ++j) {
 			if (hold[j] > hold[j+1]) {
+				pr(i, j);
 				float temp = hold[j];  
 				hold[j] = hold[j+1];  
 				hold[j+1] = temp;
@@ -44,6 +48,8 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 
 	return hold[(arrCounter+1)/2];
 }
+
+
 
 int main(int argc, char* argv[])
 {
