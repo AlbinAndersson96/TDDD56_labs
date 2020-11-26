@@ -37,82 +37,23 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
-			hold[arrCounter++] = image(y, x);
+			hold[arrCounter++] += image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		pr(i, 0);
 		for (int j = i+1; j < arrCounter-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
+				float temp = hold[j];
+				hold[j] = hold[j+1];
 				hold[j+1] = temp;
 			}
 		}
 	}
-
+	
 	return hold[(arrCounter+1)/2];
 }
 
 
-
-
-struct skepu_userfunction_skepu_skel_0calculateMedian_pr
-{
-constexpr static size_t totalArity = 2;
-constexpr static size_t outArity = 1;
-constexpr static bool indexed = 0;
-using IndexType = void;
-using ElwiseArgs = std::tuple<>;
-using ContainerArgs = std::tuple<>;
-using UniformArgs = std::tuple<int, int>;
-typedef std::tuple<> ProxyTags;
-constexpr static skepu::AccessMode anyAccessMode[] = {
-};
-
-using Ret = void;
-
-constexpr static bool prefersMatrix = 0;
-
-#define SKEPU_USING_BACKEND_CUDA 1
-#undef VARIANT_CPU
-#undef VARIANT_OPENMP
-#undef VARIANT_CUDA
-#define VARIANT_CPU(block)
-#define VARIANT_OPENMP(block)
-#define VARIANT_CUDA(block) block
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ void CU(int i, int j)
-{
-	printf("i: %d, j: %d\n", i, j);
-}
-#undef SKEPU_USING_BACKEND_CUDA
-
-#define SKEPU_USING_BACKEND_OMP 1
-#undef VARIANT_CPU
-#undef VARIANT_OPENMP
-#undef VARIANT_CUDA
-#define VARIANT_CPU(block)
-#define VARIANT_OPENMP(block) block
-#define VARIANT_CUDA(block)
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE void OMP(int i, int j)
-{
-	printf("i: %d, j: %d\n", i, j);
-}
-#undef SKEPU_USING_BACKEND_OMP
-
-#define SKEPU_USING_BACKEND_CPU 1
-#undef VARIANT_CPU
-#undef VARIANT_OPENMP
-#undef VARIANT_CUDA
-#define VARIANT_CPU(block) block
-#define VARIANT_OPENMP(block)
-#define VARIANT_CUDA(block) block
-static inline SKEPU_ATTRIBUTE_FORCE_INLINE void CPU(int i, int j)
-{
-	printf("i: %d, j: %d\n", i, j);
-}
-#undef SKEPU_USING_BACKEND_CPU
-};
 
 
 struct skepu_userfunction_skepu_skel_0calculateMedian_median_kernel
@@ -148,20 +89,19 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
-			hold[arrCounter++] = image(y, x);
+			hold[arrCounter++] += image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		skepu_userfunction_skepu_skel_0calculateMedian_pr::CU(i, 0);
 		for (int j = i+1; j < arrCounter-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
+				float temp = hold[j];
+				hold[j] = hold[j+1];
 				hold[j+1] = temp;
 			}
 		}
 	}
-
+	
 	return hold[(arrCounter+1)/2];
 }
 #undef SKEPU_USING_BACKEND_CUDA
@@ -182,20 +122,19 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region2D<uns
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
-			hold[arrCounter++] = image(y, x);
+			hold[arrCounter++] += image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		skepu_userfunction_skepu_skel_0calculateMedian_pr::OMP(i, 0);
 		for (int j = i+1; j < arrCounter-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
+				float temp = hold[j];
+				hold[j] = hold[j+1];
 				hold[j+1] = temp;
 			}
 		}
 	}
-
+	
 	return hold[(arrCounter+1)/2];
 }
 #undef SKEPU_USING_BACKEND_OMP
@@ -216,20 +155,19 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
-			hold[arrCounter++] = image(y, x);
+			hold[arrCounter++] += image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		skepu_userfunction_skepu_skel_0calculateMedian_pr::CPU(i, 0);
 		for (int j = i+1; j < arrCounter-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
-				float temp = hold[j];  
-				hold[j] = hold[j+1];  
+				float temp = hold[j];
+				hold[j] = hold[j+1];
 				hold[j+1] = temp;
 			}
 		}
 	}
-
+	
 	return hold[(arrCounter+1)/2];
 }
 #undef SKEPU_USING_BACKEND_CPU
