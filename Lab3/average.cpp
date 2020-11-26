@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 	
 		auto timeTaken = skepu::benchmark::measureExecTime([&]
 		{
-			conv(outputMatrixGaus, inputMatrixPad, stencil, imageInfo.elementsPerPixel);
+			conv(outputMatrixGaus, inputMatrix, stencil, imageInfo.elementsPerPixel);
 		});
 	
 		WritePngFileMatrix(outputMatrixGaus, outputFile + "-gaussian.png", colorType, imageInfo);
