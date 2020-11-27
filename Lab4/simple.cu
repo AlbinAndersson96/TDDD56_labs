@@ -31,7 +31,7 @@ int main()
 	
 	cudaMalloc( (void**)&cd, n*sizeof(float) );
 
-	dim3 dimBlock( blocksize, 1 );
+	dim3 dimBlock( blocksize, 4 );
 	dim3 dimGrid( 1, 1 );
 
 	cudaMemcpy( cd, inputData, n*sizeof(float), cudaMemcpyHostToDevice ); 
