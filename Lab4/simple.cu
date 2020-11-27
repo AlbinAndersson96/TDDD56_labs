@@ -13,7 +13,7 @@ const int blocksize = 1;
 __global__ 
 void simple(float *c) 
 {
-	c[threadIdx.x] = sqrt(c[threadIdx.x]);
+	c[threadIdx.y] = sqrt(c[threadIdx.y]);
 }
 
 int main()
