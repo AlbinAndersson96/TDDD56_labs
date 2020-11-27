@@ -87,20 +87,20 @@ static unsigned char median_kernel(skepu_region2d_unsigned__space__char image, u
 {
 	float res = 0;
 	int arrCounter = 0;
-	float hold[100000];
-	//std::vector<int> hold(5000); // Prevents allocation
+	unsigned char hold[100000];
+	unsigned char holdT;
 
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
-			hold[arrCounter++] += skepu_region_access_2d_unsigned__space__char(image,y, x);
+			hold[arrCounter++] = skepu_region_access_2d_unsigned__space__char(image,y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
 		for (int j = i+1; j < arrCounter-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
-				float temp = hold[j];
+				holdT = hold[j];
 				hold[j] = hold[j+1];
-				hold[j+1] = temp;
+				hold[j+1] = holdT;
 			}
 		}
 	}
