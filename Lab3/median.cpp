@@ -23,19 +23,22 @@ void pr(int i, int j) {
 
 unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPerPx)
 {
-	float res = 0;
+	// So we get a limit on the array
 	int arrCounter = 0;
+
+	// Used in our bubble sort
 	unsigned char hold[100000];
 	unsigned char holdT;
 
+	// This block might be data-dependent, array position depends on last position.
 	for (int y = -image.oi; y <= image.oi; ++y)
 		for (int x = -image.oj; x <= image.oj; x += elemPerPx)
 			hold[arrCounter++] = image(y, x);
 
+	// Bubble sorts is not data dependent
     for (int i = 0; i < arrCounter-1; ++i) {  
 		for (int j = 0; j < arrCounter-i-1; ++j) {
-			if (hold[j] > hold[j+1]) {
-				
+			if (hold[j] > hold[j+1]) {			
 				holdT = hold[j];
 				hold[j] = hold[j+1];
 				hold[j+1] = holdT;

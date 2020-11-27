@@ -16,3 +16,26 @@
 
 2.1 Which version of the averaging filter (unified, separable) is the most efficient? Why?
     - The separable version has a simpler mathematical expression to calculate which also means that in this case, it is faster/more efficient to compute.
+
+
+3.1 In data-parallel skeletons like MapOverlap, all elements areprocessed independently of each other. Is this a good fit for the medianfilter? Why/why not?
+    - The calculations required for the median filter are independent from each other, which makes data-parallel skeletons like MapOverlap a good fit for this type of filter.
+
+3.2 Describe the sequence of instructions executed in your user-function. Is it data dependent? What does this mean for e.g., automatic vectorization, or the GPU backend?
+    - Our user-function first feeds the image data into an array, which is then sorted using bubble-sort and the "middle" element is chosen as return. The data-inserting step
+    of this process might be data-dependent since it the next array position depends on the last position. This might (depending on how smart Skepu is) have an effect on the
+    paralellization of the program. It can paralellize the independent kernels but not the code within the kernels.
+
+
+
+Median execution timings (4 radius):
+    - CPU: 0.108236 seconds
+    - OpenMP: 0.0134109 seconds
+    - OpenCL: 0.0011665 seconds
+    - CUDA: 0.0011685 seconds
+
+Median execution timings (16 radius):
+    - CPU: 11.0785 seconds
+    - OpenMP: 1.32131 seconds
+    - OpenCL: 0.0004991 seconds
+    - CUDA: 0.0011152 seconds

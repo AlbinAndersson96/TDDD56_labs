@@ -338,9 +338,7 @@ printf("ID: %d\n", id);
     // Thread A
     if (id == 0) {
       printf("TID: 0 => Stuck in loop until lockA unlocks\n");
-      while (lockA == 1) {
-        // A gets stuck here
-      }
+      while (lockA == 1);
       printf("TID: 0 => Free from loop, lockA must be 0\n");
     }
     
