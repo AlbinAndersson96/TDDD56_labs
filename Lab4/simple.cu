@@ -24,10 +24,10 @@ int main()
 
 	float *inputData = new float[n];
 	float *outputData = new float[n];
-	*inputData[0] = 1;
-	*inputData[1] = 4;
-	*inputData[2] = 9;
-	*inputData[3] = 100;
+	inputData[0] = 1;
+	inputData[1] = 4;
+	inputData[2] = 9;
+	inputData[3] = 100;
 	
 	cudaMalloc( (void**)&cd, n*sizeof(float) );
 
