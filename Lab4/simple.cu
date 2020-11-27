@@ -41,8 +41,8 @@ int main()
 	cudaMemcpy( outputData, cd, n*sizeof(float), cudaMemcpyDeviceToHost ); 
 	cudaFree( cd );
 	
-	for (int i = 0; i < N; i++)
-		printf("%f ", c[i]);
+	for (int i = 0; i < n; i++)
+		printf("%f ", outputData[i]);
 	printf("\n");
 
 	delete[] c;
