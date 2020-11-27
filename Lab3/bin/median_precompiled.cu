@@ -37,7 +37,7 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 			hold[arrCounter++] = image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		for (int j = i+1; j < arrCounter-1; ++j) {
+		for (int j = 0; j < arrCounter-i-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
 				holdT = hold[j];
@@ -47,7 +47,7 @@ unsigned char median_kernel(skepu::Region2D<unsigned char> image, size_t elemPer
 		}
 	}
 	
-	return hold[(arrCounter+1)/2];
+	return hold[(arrCounter-1)/2];
 }
 
 
@@ -89,7 +89,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 			hold[arrCounter++] = image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		for (int j = i+1; j < arrCounter-1; ++j) {
+		for (int j = 0; j < arrCounter-i-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
 				holdT = hold[j];
@@ -99,7 +99,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE __device__ unsigned char CU(skepu::Re
 		}
 	}
 	
-	return hold[(arrCounter+1)/2];
+	return hold[(arrCounter-1)/2];
 }
 #undef SKEPU_USING_BACKEND_CUDA
 
@@ -122,7 +122,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region2D<uns
 			hold[arrCounter++] = image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		for (int j = i+1; j < arrCounter-1; ++j) {
+		for (int j = 0; j < arrCounter-i-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
 				holdT = hold[j];
@@ -132,7 +132,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char OMP(skepu::Region2D<uns
 		}
 	}
 	
-	return hold[(arrCounter+1)/2];
+	return hold[(arrCounter-1)/2];
 }
 #undef SKEPU_USING_BACKEND_OMP
 
@@ -155,7 +155,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 			hold[arrCounter++] = image(y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		for (int j = i+1; j < arrCounter-1; ++j) {
+		for (int j = 0; j < arrCounter-i-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
 				holdT = hold[j];
@@ -165,7 +165,7 @@ static inline SKEPU_ATTRIBUTE_FORCE_INLINE unsigned char CPU(skepu::Region2D<uns
 		}
 	}
 	
-	return hold[(arrCounter+1)/2];
+	return hold[(arrCounter-1)/2];
 }
 #undef SKEPU_USING_BACKEND_CPU
 };

@@ -95,7 +95,7 @@ static unsigned char median_kernel(skepu_region2d_unsigned__space__char image, u
 			hold[arrCounter++] = skepu_region_access_2d_unsigned__space__char(image,y, x);
 
     for (int i = 0; i < arrCounter-1; ++i) {  
-		for (int j = i+1; j < arrCounter-1; ++j) {
+		for (int j = 0; j < arrCounter-i-1; ++j) {
 			if (hold[j] > hold[j+1]) {
 				
 				holdT = hold[j];
@@ -105,7 +105,7 @@ static unsigned char median_kernel(skepu_region2d_unsigned__space__char image, u
 		}
 	}
 	
-	return hold[(arrCounter+1)/2];
+	return hold[(arrCounter-1)/2];
 }
 
 
