@@ -8,7 +8,7 @@
 
 const int N = 16; 
 const int n = 4;
-const int blocksize = 4; 
+const int blocksize = 1; 
 
 __global__ 
 void simple(float *c) 
@@ -18,7 +18,7 @@ void simple(float *c)
 
 int main()
 {
-	float *c = new float[N];	
+	float *c = new float[N];
 	float *cd;
 	const int size = N*sizeof(float);
 
