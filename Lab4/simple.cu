@@ -11,9 +11,12 @@ const int n = 4;
 const int blocksize = 1; 
 
 __global__ 
-void simple(float *c) 
+void simple(int n, float *c) 
 {
-	c[threadIdx.y] = sqrt(c[threadIdx.y]);
+	if(threadIdx.x < n)
+	{
+		c[threadIdx.x] = sqrt(c[threadIdx.x]);
+	}
 }
 
 int main()
@@ -31,11 +34,11 @@ int main()
 	
 	cudaMalloc( (void**)&cd, n*sizeof(float) );
 
-	dim3 dimBlock( blocksize, 4 );
+	dim3 dimBlock(n, blocksize);
 	dim3 dimGrid( 1, 1 );
 
 	cudaMemcpy( cd, inputData, n*sizeof(float), cudaMemcpyHostToDevice ); 
-	simple<<<dimGrid, dimBlock>>>(cd);
+	simple<<<dimGrid, dimBlock>>>(n, cd);
 
 	cudaThreadSynchronize();
 	cudaMemcpy( outputData, cd, n*sizeof(float), cudaMemcpyDeviceToHost ); 
