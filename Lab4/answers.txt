@@ -25,4 +25,25 @@ Write down your data size, block size and timing data for the best GPU performan
     - 512x512 blocks with 16x16 threads per block
     =
     GPU Kernel executed in 22.839487 milliseconds
-    CPU function executed in 1880.901978 milliseconds          
+    CPU function executed in 1880.901978 milliseconds
+
+
+What were the main changes in order to make the Mandelbrot run in CUDA?
+    - Specify what functions/variables were to be run on the device using __device__ or __global__ depending on caller
+    - Unwind the nested loop in the computeFractal function
+    - Allocate/De-allocate space on the GPU
+
+How many blocks and threads did you use?
+    - 16x16 threads per block and gImageWidth/threadsPerBlock.x by gImageHeight/threadsPerBlock.y blocks.
+
+When you use the Complex class, what modifier did you have to use on the methods?
+    - We used __device__ since the functions would only ever be called from the device.
+
+What performance did you get? How does that compare to the CPU solution?
+    - The GPU-performance absolutely dumpsters the CPU-performance. CPU lags at the default number of iterations while we can spam the + button and not experience any slowdown on the GPU.
+
+What performance did you get with float vs double precision?
+    - Timing the computeFractal function we found the single & double precision prefomance to differ by 10x in favor of float.
+
+In Lab 1, load balancing was an important issue. Is that an issue here? Why/why not?
+    - No. CUDA seems to do some form of "load balancing" for us when we segment the image into blocks with 16x16 threads.

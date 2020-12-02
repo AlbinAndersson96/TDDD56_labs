@@ -25,7 +25,11 @@
 #include <math.h>
 
 // Image data
+	
 	unsigned char	*pixels = NULL;
+	unsigned char   *gpuPixels;
+
+	__managed__
 	int	 gImageWidth, gImageHeight;
 
 // Init image data
@@ -43,8 +47,11 @@ void initBitmap(int width, int height)
 #define MYFLOAT float
 
 // User controlled parameters
+__managed__
 int maxiter = 20;
+__managed__
 MYFLOAT offsetx = -200, offsety = 0, zoom = 0;
+__managed__
 MYFLOAT scale = 1.5;
 
 // Complex number class
@@ -52,25 +59,30 @@ struct cuComplex
 {
     MYFLOAT   r;
     MYFLOAT   i;
-    
+	
+	__device__
     cuComplex( MYFLOAT a, MYFLOAT b ) : r(a), i(b)  {}
-    
+	
+	__device__
     float magnitude2( void )
     {
         return r * r + i * i;
     }
-    
+	
+	__device__
     cuComplex operator*(const cuComplex& a)
     {
         return cuComplex(r*a.r - i*a.i, i*a.r + r*a.i);
     }
-    
+	
+	__device__
     cuComplex operator+(const cuComplex& a)
     {
         return cuComplex(r+a.r, i+a.i);
     }
 };
 
+__device__
 int mandelbrot( int x, int y)
 {
     MYFLOAT jx = scale * (MYFLOAT)(gImageWidth/2 - x + offsetx/scale)/(gImageWidth/2);
@@ -90,31 +102,29 @@ int mandelbrot( int x, int y)
     return i;
 }
 
-void computeFractal( unsigned char *ptr)
+__global__
+void computeFractal( unsigned char *ptr )
 {
-    // map from x, y to pixel position
-    for (int x = 0; x < gImageWidth; x++)
-	    for (int y = 0; y < gImageHeight; y++)
-	    {
-		    int offset = x + y * gImageWidth;
 
-		    // now calculate the value at that position
-		    int fractalValue = mandelbrot( x, y);
-		    
-		    // Colorize it
-		    int red = 255 * fractalValue/maxiter;
-		    if (red > 255) red = 255 - red;
-		    int green = 255 * fractalValue*4/maxiter;
-		    if (green > 255) green = 255 - green;
-		    int blue = 255 * fractalValue*20/maxiter;
-		    if (blue > 255) blue = 255 - blue;
-		    
-		    ptr[offset*4 + 0] = red;
-		    ptr[offset*4 + 1] = green;
-		    ptr[offset*4 + 2] = blue;
-		    
-		    ptr[offset*4 + 3] = 255;
-    	}
+	int index_x = blockIdx.x * blockDim.x + threadIdx.x;
+	int index_y = blockIdx.y * blockDim.y + threadIdx.y;
+	int index = index_y * gImageWidth + index_x;
+
+	int fractalValue = mandelbrot(index_x, index_y);
+
+	// Colorize it
+	int red = 255 * fractalValue/maxiter;
+	if (red > 255) red = 255 - red;
+	int green = 255 * fractalValue*4/maxiter;
+	if (green > 255) green = 255 - green;
+	int blue = 255 * fractalValue*20/maxiter;
+	if (blue > 255) blue = 255 - blue;
+	
+	ptr[index*4 + 0] = red;
+	ptr[index*4 + 1] = green;
+	ptr[index*4 + 2] = blue;
+	
+	ptr[index*4 + 3] = 255;
 }
 
 char print_help = 0;
@@ -167,8 +177,49 @@ void PrintHelp()
 // Compute fractal and display image
 void Draw()
 {
-	computeFractal(pixels);
+	int blockSize = 16;
+	dim3 threadsPerBlock( blockSize, blockSize);
+	dim3 numBlocks( gImageWidth/threadsPerBlock.x, gImageHeight/threadsPerBlock.y );
+
+	cudaMalloc( (void**)&gpuPixels, gImageHeight*gImageWidth*sizeof(unsigned char)*4 );
+	cudaMemcpy( gpuPixels, pixels, gImageHeight*gImageWidth*sizeof(unsigned char)*4, cudaMemcpyHostToDevice );
+
+	// Time start
+	cudaEvent_t startTimeEvent;
+	cudaEvent_t endTimeEvent;
+	float theTime;
 	
+	cudaEventCreate(&startTimeEvent);
+	cudaEventCreate(&endTimeEvent);
+
+	cudaEventRecord(startTimeEvent, 0);
+
+	computeFractal<<<numBlocks, threadsPerBlock>>>(gpuPixels);
+	cudaDeviceSynchronize();
+
+	// Time end
+	cudaEventRecord(endTimeEvent, 0);
+	cudaEventSynchronize(endTimeEvent);
+	cudaEventElapsedTime(&theTime, startTimeEvent, endTimeEvent);
+
+	// Cleanup
+	cudaEventDestroy(startTimeEvent);
+	cudaEventDestroy(endTimeEvent);
+	
+	printf("\rGPU Kernel executed in %f milliseconds", theTime);
+	fflush(stdout);
+
+	cudaMemcpy( pixels, gpuPixels, gImageHeight*gImageWidth*sizeof(unsigned char)*4, cudaMemcpyDeviceToHost );
+
+	cudaFree(gpuPixels);
+
+	// Check for, and print any kernel launch error
+	cudaError_t err = cudaGetLastError();
+	if(err != cudaSuccess)
+		printf("Cuda error: %s\n", cudaGetErrorString(err));
+
+	
+
 // Dump the whole picture onto the screen. (Old-style OpenGL but without lots of geometry that doesn't matter so much.)
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT );
@@ -256,7 +307,7 @@ int main( int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
 	glutInitWindowSize( DIM, DIM );
-	glutCreateWindow("Mandelbrot explorer (CPU)");
+	glutCreateWindow("Mandelbrot explorer (GPU)");
 	glutDisplayFunc(Draw);
 	glutMouseFunc(mouse_button);
 	glutMotionFunc(mouse_motion);
