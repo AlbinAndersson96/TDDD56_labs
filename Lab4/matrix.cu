@@ -24,8 +24,8 @@ void add_matrix_GPU(float *a, float *b, float *c, int N)
     int index_x = blockIdx.x * blockDim.x + threadIdx.x;
     int index_y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    //int index = index_x * N + index_y;
-    int index = index_y * N + index_x;
+    int index = index_x * N + index_y;
+    //int index = index_y * N + index_x;
     
     c[index] = a[index] + b[index];
 }

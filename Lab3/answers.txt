@@ -3,7 +3,7 @@
       You also might get fewer total accesses to the vectors memory since it can do both mapping and reducing together.
 
     
-1.2 Is there any practical reason to ever use separate Map andReduce in sequence?
+1.2 Is there any practical reason to ever use separate Map and Reduce in sequence?
     - If you ever need to save the intermediate answer, using a separate Map + Reduce might be advantagious.
 
 
