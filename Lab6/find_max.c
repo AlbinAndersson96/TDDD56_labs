@@ -84,6 +84,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 
 
 static cl_kernel gpgpuReduction;
+static cl_kernel gpgpuReductionTwo;
 
 int find_max_gpu(unsigned int *data, unsigned int length)
 {
@@ -141,6 +142,7 @@ int main( int argc, char** argv)
   }
   // Load and compile the kernel
   gpgpuReduction = compileKernel("find_max.cl", "find_max");
+  //gpgpuReuctionSecond = compileKernel("find_max_second.cl", "find_max_second");
 
   data_cpu = generateRandomData(length);
   data_gpu = (unsigned int *)malloc (length*sizeof(unsigned int));
