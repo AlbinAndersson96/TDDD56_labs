@@ -26,17 +26,19 @@
 
 3. Bitonic
 -Should each thread produce one output or two? Why?
-    
+    Each thread switches 2 values in the dataset. Which might get equalled to 2 outputs?
 
 -How many items can you handle in one workgroup?
     The maximum size of one workgroup is 512 elements
 
 -What problem must be solved when you use more than one workgroup? How did you solve it?
-
+    - Local thread index must be changed to global thread index
+    - We had to move the two outer loops into the bitonic_gpu function such that we could call the kernel multiple times
 
 -What time do you get? Difference to the CPU? What is the break even size? What can you expect for a parallel CPU version? (Your conclusions here may vary between the labs.)
     Running 16384 values resulted in: 
         CPU 0.017975
         GPU 0.001634 <- Winner, over 10 times as fast
 
-    For the break even size, we found
+    For the break even size, we found that a number between 4096 and 8192 would be the break even size. But since the bitonic sorting
+    algorithm only works for data-sizes of power 2 this is sadly not possible to find.

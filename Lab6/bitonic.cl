@@ -13,13 +13,6 @@ void exchange(__global unsigned int *i, __global unsigned int *j)
 __kernel void bitonic(__global unsigned int *data, const unsigned int N, const unsigned int j, const unsigned int k)
 { 
 
-  // 1 2 - 1 5 - 1 1
-
-  // 4 7 3 2 9 8 1 5
-  // 4 7 - 3 2 - 9 8 - 1 5
-  // 3 2 4 7 - 1 5 9 8
-  // 1 2 4 7 3 5 9 8
-
   unsigned int i = get_global_id(0);
   int ixj=i^j; 
   // Calculate indexing!
