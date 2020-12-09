@@ -73,6 +73,17 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	printCLError(ciErrNum,8);
 	
 	// Run kernel
+  cl_event event;
+  unsigned int k, j;
+  for (k=2;k<=globalWorkSize;k=2*k) // Outer loop, double size for each step
+  {
+    for (j=k>>1;j>0;j=j>>1) // Inner loop, half size for each step
+    {
+      ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_uint), (void *) &j);
+      ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
+    }
+  }
+
 	cl_event event;
 	ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
 	printCLError(ciErrNum,9);
