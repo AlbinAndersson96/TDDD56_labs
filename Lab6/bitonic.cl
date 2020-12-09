@@ -24,7 +24,7 @@ __kernel void bitonic(__global unsigned int *data, const unsigned int N)
 
   printf("GPU sorting.\n");
 
-  i = get_global_id(0);
+  i = get_global_id(0) + 1;
   for (k=2;k<=N;k=2*k) // Outer loop, double size for each step
   {
     for (j=k>>1;j>0;j=j>>1) // Inner loop, half size for each step
@@ -38,5 +38,4 @@ __kernel void bitonic(__global unsigned int *data, const unsigned int N)
     }
   }
 
-  //data[get_global_id(0)]=get_global_id(0);
 }
