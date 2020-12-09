@@ -35,4 +35,8 @@
 
 
 -What time do you get? Difference to the CPU? What is the break even size? What can you expect for a parallel CPU version? (Your conclusions here may vary between the labs.)
-    
+    Running 16384 values resulted in: 
+        CPU 0.017975
+        GPU 0.001634 <- Winner, over 10 times as fast
+
+    For the break even size, we found
