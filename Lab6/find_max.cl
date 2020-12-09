@@ -17,10 +17,10 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   // Not optimal, but it did not have to be :)
   size_t numberOfDigitsPerThread = length / numberOfThreads; // Eeach thread is responsible for this many digits (unsigned ints)
 
-  __local unsigned int dataStart[length];
+  __local unsigned int dataStart[256];
   dataStart[localThreadID] = data[threadID];
 
-  barrier();
+  barrier(CLK_GLOBAL_MEM_FENCE|CLK_LOCAL_MEM_FENCE);
 
   for(int i = numberOfDigitsPerThread/2; i >= 1; i = i/2)
   {
@@ -38,7 +38,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
 //  data[threadID] = dataStart + sizeof(unsigned int);
 
-  barrier();
+  barrier(CLK_LOCAL_MEM_FENCE);
 
   if (threadID == 0) 
   {
