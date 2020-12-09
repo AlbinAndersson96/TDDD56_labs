@@ -16,27 +16,26 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   // Not optimal, but it did not have to be :)
   size_t numberOfDigitsPerThread = length / numberOfThreads; // Eeach thread is responsible for this many digits (unsigned ints)
 
-  __global unsigned int *dataStart;
-  dataStart = data; // Each threads gets its own section of digits
+  __global unsigned int maxVals[numberOfThreads]; // Each threads gets its own section of digits
 
   for(int i = threadID*numberOfDigitsPerThread; i < (threadID+1)*numberOfDigitsPerThread; i++)
   {
-    if(dataStart[threadID] < data[i])
-      dataStart[threadID] = data[i];
+    if(maxVals[threadID] < data[i])
+      maxVals[threadID] = data[i];
   }
 
   // Something should happen here:
   // Array split into smaller parts, each run finds max of their respective chunk and adds it to global memory
   // Thread 0 then finds the maimum in global memory after barrier
 
-  barrier(CLK_GLOBAL_MEM_FENCE);
+  // barrier(CLK_GLOBAL_MEM_FENCE);
 
-  if (threadID == 0) {
-    // Find max from global memory
-    for(int i = 0; i < numberOfThreads; i++)
-      if(dataStart[0] < dataStart[i])
-        dataStart[0] = dataStart[i];
+  // if (threadID == 0) {
+  //   // Find max from global memory
+  //   for(int i = 0; i < numberOfThreads; i++)
+  //     if(maxVals[0] < maxVals[i])
+  //       maxVals[0] = maxVals[i];
 
-    data[0] = dataStart[0];
-  } 
+  //   data[0] = maxVals[0];
+  // } 
 }

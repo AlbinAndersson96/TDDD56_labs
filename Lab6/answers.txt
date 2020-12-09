@@ -3,7 +3,7 @@
     The commands to be run is fed through a command queue into the GPU (a bit similar to Vulkan?).
 
 -What function executes your kernel?
-    clFinish(CommandQueue);
+    clEnqueueNDRangeKernel
 
 -How does the kernel know what element to work on?
     The kernel has a function get_global_id(0) which returns the current thread ID, which can then be compared
