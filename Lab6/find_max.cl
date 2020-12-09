@@ -8,7 +8,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   unsigned int val;
 
   size_t threadID = get_global_id(0);
-  size_t localThreadID = get_local_id(0);
   size_t numberOfThreads = 0;
 
   if (length < 512) numberOfThreads = length;
@@ -17,18 +16,13 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   // Not optimal, but it did not have to be :)
   size_t numberOfDigitsPerThread = length / numberOfThreads; // Eeach thread is responsible for this many digits (unsigned ints)
 
-  __local unsigned int dataStart[256];
-  dataStart[localThreadID] = data[threadID];
+  __global unsigned int *dataStart;
+  dataStart = data; // Each threads gets its own section of digits
 
-  barrier(CLK_GLOBAL_MEM_FENCE|CLK_LOCAL_MEM_FENCE);
-
-  for(int i = numberOfDigitsPerThread/2; i >= 1; i = i/2)
+  for(int i = threadID*numberOfDigitsPerThread; i < (threadID+1)*numberOfDigitsPerThread; i++)
   {
-    if(localThreadID < i)
-    {
-      if(dataStart[localThreadID] < dataStart[localThreadID + i])
-        dataStart[localThreadID] = dataStart[localThreadID + i];
-    }
+    if(dataStart[threadID] < data[i])
+      dataStart[threadID] = data[i];
   }
 
 
@@ -36,13 +30,16 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   // Array split into smaller parts, each run finds max of their respective chunk and adds it to global memory
   // Thread 0 then finds the maimum in global memory after barrier
 
-//  data[threadID] = dataStart + sizeof(unsigned int);
+  //data[threadID] = dataStart + sizeof(unsigned int);
 
-  barrier(CLK_LOCAL_MEM_FENCE);
+  barrier(CLK_GLOBAL_MEM_FENCE)
 
-  if (threadID == 0) 
-  {
-  //   // Find max from global memory
-    data[threadID] = dataStart[localThreadID];
+  if (threadID == 0) {
+    // Find max from global memory
+    for(int i = 0; i < numberOfThreads; i++)
+      if(dataStart[0] < dataStart[i])
+        dataStart[0] = dataStart[i];
+
+    data[0] = dataStart[0];
   } 
 }
