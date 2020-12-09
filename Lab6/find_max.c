@@ -89,6 +89,9 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
     ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
   //}
 
+    // A final run that finds max of maxes
+    ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
+
 
 
 	printCLError(ciErrNum,9);
@@ -113,7 +116,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printCLError(ciErrNum,7);
 
 	// ********** RUN THE KERNEL ************
-	runKernel(gpgpuReduction, length, io_data, length);
+	//runKernel(gpgpuReduction, length, io_data, length);
 
 	// Get data
 	cl_event event;
