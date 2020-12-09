@@ -2,7 +2,7 @@
  * Placeholder OpenCL kernel
  */
 
-void exchange(unsigned int *i, unsigned int *j)
+void exchange(__global unsigned int *i, __global unsigned int *j)
 {
 	int k;
 	k = *i;
