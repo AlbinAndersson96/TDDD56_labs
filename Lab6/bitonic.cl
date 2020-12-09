@@ -39,7 +39,7 @@ __kernel void bitonic(__global unsigned int *data, const unsigned int N, const u
   //     }
   //   }
   // }
-  unsigned int i = get_local_id(0);
+  unsigned int i = get_global_id(0);
   int ixj=i^j; 
   // Calculate indexing!
   if ((ixj)>i) {
