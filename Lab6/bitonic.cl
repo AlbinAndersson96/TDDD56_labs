@@ -10,7 +10,7 @@ void exchange(__global unsigned int *i, __global unsigned int *j)
 	*j = k;
 }
 
-__kernel void bitonic(__global unsigned int *data, const unsigned int N, const unsigned int j)
+__kernel void bitonic(__global unsigned int *data, const unsigned int N, const unsigned int j, const unsigned int k)
 { 
 
   // 1 2 - 1 5 - 1 1

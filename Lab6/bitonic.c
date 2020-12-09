@@ -80,6 +80,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
     for (j=k>>1;j>0;j=j>>1) // Inner loop, half size for each step
     {
       ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_uint), (void *) &j);
+      ciErrNum |= clSetKernelArg(kernel, 3, sizeof(cl_uint), (void *) &k);
       ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
     }
   }
