@@ -33,209 +33,109 @@
 #define maxKernelSizeX 40
 #define maxKernelSizeY 40
 
-#define KERNEL_SIZE_X 7
-#define KERNEL_SIZE_Y 7
+#define KERNEL_SIZE_X 9
+#define KERNEL_SIZE_Y 9
 
 #define BLOCK_SIZE 32
 
 __device__
-void mapPixel(unsigned char *inputImage, unsigned char *sharedMemory, int sharedIndex, int globalIndex, int pixelsPerThread)
+void mapPixel(unsigned char *inputImage, unsigned char *sharedMemory, int sharedIndex, int globalIndex)
 {
-	for (int i = 0; i < pixelsPerThread; ++i) 
-	{
-		sharedMemory[sharedIndex + i*3 + 0] = inputImage[globalIndex + i*3 + 0];
-		sharedMemory[sharedIndex + i*3 + 1] = inputImage[globalIndex + i*3 + 1];
-		sharedMemory[sharedIndex + i*3 + 2] = inputImage[globalIndex + i*3 + 2];
-	}
+	sharedMemory[sharedIndex + 0] = inputImage[globalIndex + 0];
+	sharedMemory[sharedIndex + 1] = inputImage[globalIndex + 1];
+	sharedMemory[sharedIndex + 2] = inputImage[globalIndex + 2];
+
+}
+
+__device__
+void mapPixelRed(unsigned char *inputImage, unsigned char *sharedMemory, int sharedIndex, int globalIndex)
+{
+	sharedMemory[sharedIndex + 0] = 255.0;
+	sharedMemory[sharedIndex + 1] = 0;
+	sharedMemory[sharedIndex + 2] = 0;
+
 }
 
 __global__
 void filterKernel(unsigned char *inputImage, unsigned char *out, const unsigned int imagesizex, const unsigned int imagesizey, const int kernelsizex, const int kernelsizey) {
 	
 	extern __shared__ unsigned char sharedMemory[];
-
 	
-
 	int pad_x = blockDim.x + kernelsizex - 1;
 	int pad_y = blockDim.y + kernelsizey - 1;
-	int pixelsPerThread = ceil(((float)(pad_x*pad_y)/(blockDim.x*blockDim.y)));
-
-	// if (threadIdx.x == 0 && blockIdx.x == 0) {
-	// 	for(int i = 0; i < pad_x; ++i) {
-	// 		for(int j = 0; j < pad_y; ++j) {
-	// 			sharedMemory[i*j] = 0.0;
-	// 		}
-	// 	}
-	// }
 		
 	// if (threadIdx.x == 0 && threadIdx.y == 0) {
 	// 	printf("%d\n", pixelsPerThread);
-	// }
+	// } 
 
-	int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x);
+	int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x); // Thread {0, 0} => img{0, 0}
 	int index_y_img = (blockIdx.y * blockDim.y + threadIdx.y);
 
-
-	//int index_shared_true_start = ((kernelsizey/2) * pad_x + (kernelsizex/2)) * 3;
-	/*if (threadIdx.x == 0 && threadIdx.y == 0) {
-		printf("%d\n", index_shared_true_start);
-	}*/
-
-	//int index_shared_x = threadIdx.x + (KERNEL_SIZE_X/2);
-	//int index_shared_y = threadIdx.y + (KERNEL_SIZE_Y/2);
-	//int index_shared_out = index_shared_true_start + (threadIdx.y * pad_x + threadIdx.x * pixelsPerThread) * 3;
-
-	// int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-
-	// if (blockIdx.x == 0) { // Left
-	// 	if (blockIdx.y == 0) { // Lower left corner
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-
-	// 	} else if (blockIdx.y == gridDim.y - 1) { // Upper left corner
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// 	} else { // Left
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// 	}
-	// }
-
-	// else if (blockIdx.y == 0 ) { // Lower
-	// 	if (blockIdx.x == gridDim.x - 1) { // Lower right corner
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// 	} else {
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// 	}
-
-	// }
-
-	// else if (blockIdx.x == gridDim.x - 1) { // Right
-	// 	if (blockIdx.y == gridDim.y - 1) { // Upper right corner
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// 	} else {
-	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// 	}
-	// }
-
-	// else if (blockIdx.y == gridDim.y - 1) { // Upper
-	// 	int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
-	// 	int special_index = (index_y_img*imagesizex + index_x_img)*3;
-	// 	mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
-	// } 
-	
-	// else {
-	// 	/*for (int i = 0; i < pixelsPerThread; ++i) 
-	// 	{
-	// 		sharedMemory[index_shared + i*3 + 0] = inputImage[index + i*3 + 0];
-	// 		sharedMemory[index_shared + i*3 + 1] = inputImage[index + i*3 + 1];
-	// 		sharedMemory[index_shared + i*3 + 2] = inputImage[index + i*3 + 2];
-	// 	}*/
-
-	// }
 	int index_shared_x = threadIdx.x + (KERNEL_SIZE_X/2);
 	int index_shared_y = threadIdx.y + (KERNEL_SIZE_Y/2);
+	
+	int halfKernel = kernelsizey/2;
 	int index_shared = (index_shared_y * pad_x + index_shared_x) * 3;
+	int global_index = (index_y_img * imagesizex + index_x_img) * 3;
 
-	int index = (index_y_img*imagesizex + index_x_img)*3;
+	// Read pixels left
+	if (threadIdx.x == 0) {
+		for(int i = 1; i <= halfKernel; ++i) {
+			int indexOOR = (index_shared_y * pad_x + index_shared_x - i) * 3;
+			int globalindexOOR = (index_y_img * imagesizex + index_x_img - i) * 3;
 
-	mapPixel(inputImage, sharedMemory, index_shared, index, pixelsPerThread);
+			globalindexOOR = max(globalindexOOR, 0);
+			mapPixel(inputImage, sharedMemory, indexOOR, globalindexOOR);
+		}
+	}
+
+	// Read pixels right
+	if (threadIdx.x == blockDim.x - 1) {
+		for(int i = 1; i <= halfKernel; ++i) {
+			int indexOOR = (index_shared_y * pad_x + index_shared_x + i) * 3;
+			int globalindexOOR = (index_y_img * imagesizex + index_x_img + i) * 3;
+			mapPixel(inputImage, sharedMemory, indexOOR, globalindexOOR);
+		}
+	}
+
+	// Read pixels down
+	if (threadIdx.y == 0) {
+		for(int i = 1; i <= halfKernel; ++i) {
+			int indexOOR = ((index_shared_y - i) * pad_x + index_shared_x) * 3;
+			int globalindexOOR = ((index_y_img - i) * imagesizex + index_x_img) * 3;
+
+			globalindexOOR = max(globalindexOOR, 0);
+			mapPixel(inputImage, sharedMemory, indexOOR, globalindexOOR);
+		}
+	}
+
+	// Read pixels up
+	if (threadIdx.y == blockDim.y - 1) {
+		for(int i = 1; i <= halfKernel; ++i) {
+			int indexOOR = ((index_shared_y + i) * pad_x + index_shared_x) * 3;
+			int globalindexOOR = ((index_y_img + i) * imagesizex + index_x_img) * 3;
+			mapPixel(inputImage, sharedMemory, indexOOR, globalindexOOR);
+		}
+	}
+
+	mapPixel(inputImage, sharedMemory, index_shared, global_index);
 
 	__syncthreads();
 
-	//int divby = (2*kernelsizex+1)*(2*kernelsizey+1); // Works for box filters only!
 	int divby = KERNEL_SIZE_X*KERNEL_SIZE_Y;
 
-	float r=255.0, g=255.0, b=255.0;
+	float r=0.0, g=0.0, b=0.0;
 	for(int i = -(KERNEL_SIZE_Y/2); i <= (KERNEL_SIZE_Y/2); ++i) {
 		for(int j = -(KERNEL_SIZE_X/2); j <= (KERNEL_SIZE_X/2); ++j) {
 			r += sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 0];
 			g += sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 1];
 			b += sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 2];
-
-			// r += sharedMemory[((index_shared_y*pad_x + i) + (index_shared_x + j))*3 + 0];
-			// g += sharedMemory[((index_shared_y*pad_x + i) + (index_shared_x + j))*3 + 1];
-			// b += sharedMemory[((index_shared_y*pad_x + i) + (index_shared_x + j))*3 + 2];
 		}
 	}
 
-	out[index + 0] = r/divby;
-	out[index + 1] = g/divby;
-	out[index + 2] = b/divby;
-
-	// out[index + 0] = sharedMemory[index_shared + 0];
-	// out[index + 1] = sharedMemory[index_shared + 1];
-	// out[index + 2] = sharedMemory[index_shared + 2];
-
-
-
-	// //int pixelsPerThread = (((imagesizex/gridDim.x)*(imagesizey/gridDim.y)*3) / (blockDim.x*blockDim.y)));
-	// int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x);
-	// int index_y_img = (blockIdx.y * blockDim.y + threadIdx.y);
-	// int index = (index_y_img*imagesizex + index_x_img)*3;
-	
-    // int index_x_shared = threadIdx.x;
-	// int index_y_shared = threadIdx.y;
-	// int index_shared = (index_y_shared * pad_x + index_x_shared * pixelsPerThread) * 3;
-
-	// int index_shared_true_start = ((kernelsizey/2) * pad_x + kernelsizex/2) * 3;
-	// int index_shared_out = index_shared_true_start + (index_y_shared * blockDim.x + index_x_shared) * 3;
-
-	// // if (threadIdx.x < 3 && threadIdx.y == 0) {
-	// // 	printf("True index and thread index: {%d, %d}\n", index_shared_true_start, index_shared_out);
-	// // }
-	
-	// Each threads reads 1 pixel (three values)
-
-
-	// 
-	
-	// out[index + 0] = sharedMemory[index_shared_out + 0];
-	// out[index + 1] = sharedMemory[index_shared_out + 1];
-	// out[index + 2] = sharedMemory[index_shared_out + 2];
-
-	// Do operation
-
-
-	// if (index_x_img < imagesizex && index_y_img < imagesizey) {
-	// 	// Filter kernel (simple box filter)
-	// 	int divby = (2*kernelsizex+1)*(2*kernelsizey+1); // Works for box filters only!
-	// 	unsigned int sumx, sumy, sumz;
-	// 	int dy, dx;
-	// 	sumx=0; sumy=0; sumz=0;
-	// 	for(dy=-kernelsizey;dy<=kernelsizey;dy++)
-	// 		for(dx=-kernelsizex;dx<=kernelsizex;dx++) {
-	// 			// Use max and min to avoid branching!
-	// 			int yy = min(max(index_y_img+dy, 0), imagesizey-1);
-	// 			int xx = min(max(index_x_img+dx, 0), imagesizex-1);
-				
-	// 			//if (value is inside image but outside of shared kernel)
-	// 			int yy_shared = min(max(index_y_shared + dy, 0), blockDim.y - 1);
-	// 			int xx_shared = min(max(index_x_shared + dx, 0), blockDim.x - 1);
-				
-	// 			sumx += sharedMemory[( (yy_shared) * blockDim.x + (xx_shared))*3 + 0];
-	// 			sumy += sharedMemory[( (yy_shared) * blockDim.x + (xx_shared))*3 + 1];
-	// 			sumz += sharedMemory[( (yy_shared) * blockDim.x + (xx_shared))*3 + 2];
-	// 		}
-	// 	out[(index_y_img*imagesizex+index_x_img)*3+0] = sumx/divby;
-	// 	out[(index_y_img*imagesizex+index_x_img)*3+1] = sumy/divby;
-	// 	out[(index_y_img*imagesizex+index_x_img)*3+2] = sumz/divby;
-	// }
-
-
+	out[global_index + 0] = r/divby;
+	out[global_index + 1] = g/divby;
+	out[global_index + 2] = b/divby;
 }
 
 __global__ void filter(unsigned char *image, unsigned char *out, const unsigned int imagesizex, const unsigned int imagesizey, const int kernelsizex, const int kernelsizey)
@@ -364,3 +264,134 @@ int main( int argc, char** argv)
 	glutMainLoop();
 	return 0;
 }
+
+
+
+	//int index_shared_true_start = ((kernelsizey/2) * pad_x + (kernelsizex/2)) * 3;
+	/*if (threadIdx.x == 0 && threadIdx.y == 0) {
+		printf("%d\n", index_shared_true_start);
+	}*/
+
+	//int index_shared_x = threadIdx.x + (KERNEL_SIZE_X/2);
+	//int index_shared_y = threadIdx.y + (KERNEL_SIZE_Y/2);
+	//int index_shared_out = index_shared_true_start + (threadIdx.y * pad_x + threadIdx.x * pixelsPerThread) * 3;
+
+	// int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+
+	// if (blockIdx.x == 0) { // Left
+	// 	if (blockIdx.y == 0) { // Lower left corner
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+
+	// 	} else if (blockIdx.y == gridDim.y - 1) { // Upper left corner
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// 	} else { // Left
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// 	}
+	// }
+
+	// else if (blockIdx.y == 0 ) { // Lower
+	// 	if (blockIdx.x == gridDim.x - 1) { // Lower right corner
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// 	} else {
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// 	}
+
+	// }
+
+	// else if (blockIdx.x == gridDim.x - 1) { // Right
+	// 	if (blockIdx.y == gridDim.y - 1) { // Upper right corner
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// 	} else {
+	// 		int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 		int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 		mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// 	}
+	// }
+
+	// else if (blockIdx.y == gridDim.y - 1) { // Upper
+	// 	int special_index_shared = (index_shared_y_temp * pad_x + index_shared_x_temp) * 3;
+	// 	int special_index = (index_y_img*imagesizex + index_x_img)*3;
+	// 	mapPixel(inputImage, sharedMemory, special_index_shared, special_index, pixelsPerThread);
+	// } 
+	
+	// else {
+	// 	/*for (int i = 0; i < pixelsPerThread; ++i) 
+	// 	{
+	// 		sharedMemory[index_shared + i*3 + 0] = inputImage[index + i*3 + 0];
+	// 		sharedMemory[index_shared + i*3 + 1] = inputImage[index + i*3 + 1];
+	// 		sharedMemory[index_shared + i*3 + 2] = inputImage[index + i*3 + 2];
+	// 	}*/
+
+
+		// out[index + 0] = sharedMemory[index_shared + 0];
+	// out[index + 1] = sharedMemory[index_shared + 1];
+	// out[index + 2] = sharedMemory[index_shared + 2];
+
+
+
+	// //int pixelsPerThread = (((imagesizex/gridDim.x)*(imagesizey/gridDim.y)*3) / (blockDim.x*blockDim.y)));
+	// int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x);
+	// int index_y_img = (blockIdx.y * blockDim.y + threadIdx.y);
+	// int index = (index_y_img*imagesizex + index_x_img)*3;
+	
+    // int index_x_shared = threadIdx.x;
+	// int index_y_shared = threadIdx.y;
+	// int index_shared = (index_y_shared * pad_x + index_x_shared * pixelsPerThread) * 3;
+
+	// int index_shared_true_start = ((kernelsizey/2) * pad_x + kernelsizex/2) * 3;
+	// int index_shared_out = index_shared_true_start + (index_y_shared * blockDim.x + index_x_shared) * 3;
+
+	// // if (threadIdx.x < 3 && threadIdx.y == 0) {
+	// // 	printf("True index and thread index: {%d, %d}\n", index_shared_true_start, index_shared_out);
+	// // }
+	
+	// Each threads reads 1 pixel (three values)
+
+
+	// 
+	
+	// out[index + 0] = sharedMemory[index_shared_out + 0];
+	// out[index + 1] = sharedMemory[index_shared_out + 1];
+	// out[index + 2] = sharedMemory[index_shared_out + 2];
+
+	// Do operation
+
+
+	// if (index_x_img < imagesizex && index_y_img < imagesizey) {
+	// 	// Filter kernel (simple box filter)
+	// 	int divby = (2*kernelsizex+1)*(2*kernelsizey+1); // Works for box filters only!
+	// 	unsigned int sumx, sumy, sumz;
+	// 	int dy, dx;
+	// 	sumx=0; sumy=0; sumz=0;
+	// 	for(dy=-kernelsizey;dy<=kernelsizey;dy++)
+	// 		for(dx=-kernelsizex;dx<=kernelsizex;dx++) {
+	// 			// Use max and min to avoid branching!
+	// 			int yy = min(max(index_y_img+dy, 0), imagesizey-1);
+	// 			int xx = min(max(index_x_img+dx, 0), imagesizex-1);
+				
+	// 			//if (value is inside image but outside of shared kernel)
+	// 			int yy_shared = min(max(index_y_shared + dy, 0), blockDim.y - 1);
+	// 			int xx_shared = min(max(index_x_shared + dx, 0), blockDim.x - 1);
+				
+	// 			sumx += sharedMemory[( (yy_shared) * blockDim.x + (xx_shared))*3 + 0];
+	// 			sumy += sharedMemory[( (yy_shared) * blockDim.x + (xx_shared))*3 + 1];
+	// 			sumz += sharedMemory[( (yy_shared) * blockDim.x + (xx_shared))*3 + 2];
+	// 		}
+	// 	out[(index_y_img*imagesizex+index_x_img)*3+0] = sumx/divby;
+	// 	out[(index_y_img*imagesizex+index_x_img)*3+1] = sumy/divby;
+	// 	out[(index_y_img*imagesizex+index_x_img)*3+2] = sumz/divby;
+	// }
