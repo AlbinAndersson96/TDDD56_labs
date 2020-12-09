@@ -9,6 +9,7 @@
     The kernel has a function get_global_id(0) which returns the current thread ID, which can then be compared
     to the total data lenght and executed if it checks out.
 
+2. Reduction
 -What timing did you get for your GPU reduction? Compare it to the CPU version.
     With default values: CPU 0.000004, GPU 0.000743
 
@@ -22,3 +23,16 @@
     You can optimize this further by using local memory on the GPU together with utilizing local thread IDs
     instead of doing everything in a global space. This would yield a lot faster results due to the number
     of global memory accesses we now are doing.
+
+3. Bitonic
+-Should each thread produce one output or two? Why?
+    
+
+-How many items can you handle in one workgroup?
+    The maximum size of one workgroup is 512 elements
+
+-What problem must be solved when you use more than one workgroup? How did you solve it?
+
+
+-What time do you get? Difference to the CPU? What is the break even size? What can you expect for a parallel CPU version? (Your conclusions here may vary between the labs.)
+    
