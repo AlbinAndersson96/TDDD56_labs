@@ -1,0 +1,10 @@
+-How is the communication between the host and the graphic card handled?
+    It is similar to the communications within OpenGL. You create a context, a program, buffers etc. 
+    The commands to be run is fed through a command queue into the GPU (a bit similar to Vulkan?).
+
+-What function executes your kernel?
+    clFinish(CommandQueue);
+
+-How does the kernel know what element to work on?
+    The kernel has a function get_global_id(0) which returns the current thread ID, which can then be compared
+    to the total data lenght and executed if it checks out.
