@@ -25,14 +25,11 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
       dataStart[threadID] = data[i];
   }
 
-
   // Something should happen here:
   // Array split into smaller parts, each run finds max of their respective chunk and adds it to global memory
   // Thread 0 then finds the maimum in global memory after barrier
 
-  //data[threadID] = dataStart + sizeof(unsigned int);
-
-  barrier(CLK_GLOBAL_MEM_FENCE)
+  barrier(CLK_GLOBAL_MEM_FENCE);
 
   if (threadID == 0) {
     // Find max from global memory
