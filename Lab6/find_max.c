@@ -157,7 +157,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   //data[0] = maxRuns[0];
 
-  //Last kernel run to find max of maxes
+  /*//Last kernel run to find max of maxes
   if(numberOfRuns > 1)
   {
     io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, numberOfRuns * sizeof(unsigned int), maxRuns, &ciErrNum);
@@ -175,7 +175,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  printCLError(ciErrNum,10);
 
 	  clReleaseMemObject(io_data);
-  }
+  }*/
+
+  printf("Data1: %d, Data2: %d", maxRuns[0], maxRuns[1]);
 
 
   data[0] = maxRuns[0];
