@@ -151,19 +151,18 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     //io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, &ciErrNum);
 	  printCLError(ciErrNum,7);
 
-	    // ********** RUN THE KERNEL ************
+	  // Write the potential maxes
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
 
+    // ********** RUN THE KERNEL ************
 	  runKernel(gpgpuReduction, (numberOfRuns-1), io_data, (numberOfRuns-1));
 
 	    // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);
-	  printCLError(ciErrNum,11);
-	    // Synch
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);  
 	  clWaitForEvents(1, &eventReadBuffer);
+    printCLError(ciErrNum,11);
 
-	  //clReleaseMemObject(io_data);
   }
 
   clReleaseMemObject(io_data);
