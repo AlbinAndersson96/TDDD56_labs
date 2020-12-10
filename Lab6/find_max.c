@@ -111,11 +111,11 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   for(int i = 0; i < numberOfRuns; ++i) {
     unsigned int partData[16384];
-    //memcpy(partData, data+numberOfRuns*16384*sizeof(unsigned int), 16384);
-    for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
-    {
-      partData[dataIndex] = data[i*16384 + dataIndex];
-    }
+    memcpy(partData, data+numberOfRuns*16384*sizeof(unsigned int), 16384);
+    // for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
+    // {
+    //   partData[dataIndex] = data[i*16384 + dataIndex];
+    // }
 
   	io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
 	  printCLError(ciErrNum,7);
@@ -162,14 +162,15 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   //printf("Data1: %u, Data2: %u\n", maxRuns[0], maxRuns[1]);
 
   //Last pass on CPU
-  /*unsigned int max = 0;
-  for(int i = 0; i < numberOfRuns - 1; i++)
-  {
-    if(maxRuns[i] > max)
-      max = maxRuns[i];
-  }*/
+  // unsigned int max = 0;
+  // for(int i = 0; i < numberOfRuns - 1; i++)
+  // {
+  //   if(maxRuns[i] > max)
+  //     max = maxRuns[i];
+  // }
+  // data[0] = max;
+  
 
-  //data[0] = max;
   data[0] = maxRuns[0];
 
 	return ciErrNum;
