@@ -26,7 +26,7 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 16384
+#define kDataLength 32768
 #define MAXPRINTSIZE 16
 
 unsigned int *generateRandomData(unsigned int length)
@@ -162,10 +162,10 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   {
     io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, numberOfRuns * sizeof(unsigned int), maxRuns, &ciErrNum);
 	  printCLError(ciErrNum,7);
-  
+
 	    // ********** RUN THE KERNEL ************
 	  runKernel(gpgpuReduction, maxRuns, io_data, maxRuns);
-  
+
 	    // Get data
 	  cl_event event;
 	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), maxRuns, 0, NULL, &event);
@@ -173,7 +173,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	    // Synch
 	  clWaitForEvents(1, &event);
 	  printCLError(ciErrNum,10);
-  
+
 	  clReleaseMemObject(io_data);
   }
 
