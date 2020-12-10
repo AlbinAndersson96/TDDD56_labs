@@ -140,38 +140,39 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     //printf("Data %d: %u\n", i, maxRuns[i]);
 
   //Last kernel run to find max of maxes
-  if(numberOfRuns > 1)
-  {
-    io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, &ciErrNum);
-	  printCLError(ciErrNum,7);
+  // if(numberOfRuns > 1)
+  // {
+  //   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, &ciErrNum);
+	//   printCLError(ciErrNum,7);
 
-	    // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, (numberOfRuns-1), io_data, (numberOfRuns-1));
+	//     // ********** RUN THE KERNEL ************
+	//   runKernel(gpgpuReduction, (numberOfRuns-1), io_data, (numberOfRuns-1));
 
-	    // Get data
-	  cl_event event;
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &event);
-	  printCLError(ciErrNum,11);
-	    // Synch
-	  clWaitForEvents(1, &event);
-	  printCLError(ciErrNum,10);
+	//     // Get data
+	//   cl_event event;
+	//   ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &event);
+	//   printCLError(ciErrNum,11);
+	//     // Synch
+	//   clWaitForEvents(1, &event);
+	//   printCLError(ciErrNum,10);
 
-	  clReleaseMemObject(io_data);
-  }
+	//   clReleaseMemObject(io_data);
+  // }
+  // 
+  // data[0] = maxRuns[0];
 
-  //printf("Data1: %u, Data2: %u\n", maxRuns[0], maxRuns[1]);
+
+  printf("Data1: %u, Data2: %u\n", maxRuns[0], maxRuns[1]);
 
   //Last pass on CPU
-  // unsigned int max = 0;
-  // for(int i = 0; i < numberOfRuns - 1; i++)
-  // {
-  //   if(maxRuns[i] > max)
-  //     max = maxRuns[i];
-  // }
-  // data[0] = max;
+  unsigned int max = 0;
+  for(int i = 0; i < numberOfRuns - 1; i++)
+  {
+    if(maxRuns[i] > max)
+      max = maxRuns[i];
+  }
+  data[0] = max;
   
-
-  data[0] = maxRuns[0];
 
 	return ciErrNum;
 }
