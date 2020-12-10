@@ -136,7 +136,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, length, io_data, length);
+	  runKernel(gpgpuReduction, 16384, io_data, 16384);
 
 	  // Get data
 	  cl_event event;
