@@ -26,7 +26,7 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 32768
+#define kDataLength 16384
 #define MAXPRINTSIZE 16
 
 unsigned int *generateRandomData(unsigned int length)
@@ -81,16 +81,27 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	
 	// Run kernel
 
-  int numberOfRuns = 1;
   cl_event event;
-  //if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
-  //for(int i = 0; i < numberOfRuns; ++i) {
-    //ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
-    ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
+
+  /*int numberOfRuns = 1;
+  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
+
+  int maxRuns[numberOfRuns];
+
+  for(int i = 0; i < numberOfRuns; ++i) {
+    unsigned int partData[16384];
+    
+    for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
+    {
+      partData[i] = data[numberOfRuns*16384 + i];
+    }*/
+
+  ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
+  ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
   //}
 
-    // A final run that finds max of maxes
-    ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
+  // A final run that finds max of maxes
+  ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
 
 
 
@@ -112,21 +123,36 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	cl_mem io_data;
 	printf("GPU reduction.\n");
 
-	io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, length * sizeof(unsigned int), data, &ciErrNum);
-	printCLError(ciErrNum,7);
+  int numberOfRuns = 1;
+  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
 
-	// ********** RUN THE KERNEL ************
-	//runKernel(gpgpuReduction, length, io_data, length);
+  int maxRuns[numberOfRuns];
 
-	// Get data
-	cl_event event;
-	ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, length * sizeof(unsigned int), data, 0, NULL, &event);
-	printCLError(ciErrNum,11);
-	// Synch
-	clWaitForEvents(1, &event);
-	printCLError(ciErrNum,10);
-  
-	clReleaseMemObject(io_data);
+  for(int i = 0; i < numberOfRuns; ++i) {
+    unsigned int partData[16384];
+    memcpy(partData, data+numberOfRuns*16384*sizeof(unsigned int), 16384);
+
+  	io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
+	  printCLError(ciErrNum,7);
+
+	  // ********** RUN THE KERNEL ************
+	  runKernel(gpgpuReduction, length, io_data, length);
+
+	  // Get data
+	  cl_event event;
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &event);
+	  printCLError(ciErrNum,11);
+	  // Synch
+	  clWaitForEvents(1, &event);
+	  printCLError(ciErrNum,10);
+
+    maxRuns[i] = partData[0];
+
+	  clReleaseMemObject(io_data);
+  }
+
+  data[0] = maxRuns[0];
+
 	return ciErrNum;
 }
 
