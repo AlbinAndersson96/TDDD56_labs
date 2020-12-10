@@ -127,14 +127,17 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  cl_event event;
 	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &event);
 	  printCLError(ciErrNum,11);
+    
 	  // Synch
 	  //clWaitForEvents(1, &event);
 	  printCLError(ciErrNum,10);
 
     maxRuns[i] = partData[0];
 
-	  clReleaseMemObject(io_data);
+	  //clReleaseMemObject(io_data);
   }
+
+  clReleaseMemObject(io_data);
 
   //Last kernel run to find max of maxes
   // if(numberOfRuns > 1)
