@@ -26,7 +26,7 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 134217728
+#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
 
 unsigned int *generateRandomData(unsigned int length)
@@ -123,8 +123,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
-
-    //io_data = partData;
   	
 	  printCLError(ciErrNum,7);
 
@@ -143,31 +141,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     printCLError(ciErrNum,11);
   }
 
-  // //Last kernel run to find max of maxes
-  // if(numberOfRuns > 1)
-  // {
-  //   //io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, &ciErrNum);
-	//   printCLError(ciErrNum,7);
-
-	//   // Write the potential maxes
-  //   ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventWriteBuffer);
-  //   clWaitForEvents(1, &eventWriteBuffer);
-
-  //   // ********** RUN THE KERNEL ************
-	//   runKernel(gpgpuReduction, (numberOfRuns-1), io_data, (numberOfRuns-1));
-
-	//     // Get data
-	//   ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);  
-	//   clWaitForEvents(1, &eventReadBuffer);
-  //   printCLError(ciErrNum,11);
-
-  // }
-
-  // clReleaseMemObject(io_data);
-
-  // data[0] = maxRuns[0];
-
-
   //Last pass on CPU
   unsigned int max = 0;
   for(int i = 0; i < numberOfRuns - 1; i++)
@@ -178,7 +151,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   }
   data[0] = max;
   
-
 	return ciErrNum;
 }
 
