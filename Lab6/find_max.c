@@ -83,27 +83,8 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 
   cl_event event;
 
-  /*int numberOfRuns = 1;
-  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
-
-  int maxRuns[numberOfRuns];
-
-  for(int i = 0; i < numberOfRuns; ++i) {
-    unsigned int partData[16384];
-    
-    for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
-    {
-      partData[i] = data[numberOfRuns*16384 + i];
-    }*/
-
   ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
   ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
-  //}
-
-  // A final run that finds max of maxes
-  ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
-
-
 
 	printCLError(ciErrNum,9);
 	

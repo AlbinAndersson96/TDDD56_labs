@@ -16,8 +16,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
   // Not optimal, but it did not have to be :)
   size_t numberOfDigitsPerThread = length / numberOfThreads; // Eeach thread is responsible for this many digits (unsigned ints)
 
-  //__global unsigned int maxVals[512]; // Each threads gets its own section of digits
-
   for(int i = threadID*numberOfDigitsPerThread; i < (threadID+1)*numberOfDigitsPerThread; i++)
   {
     if(maxVals[threadID] < data[i])
