@@ -25,22 +25,22 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
   for(int i = threadID*numberOfDigitsPerThread; i < (threadID+1)*numberOfDigitsPerThread; i++)
   {
-    if(data[0] < data[i])
-      data[0] = data[i];
+    if(data[threadID] < data[i])
+      data[threadID] = data[i];
   }
 
   // Something should happen here:
   // Array split into smaller parts, each run finds max of their respective chunk and adds it to global memory
   // Thread 0 then finds the maimum in global memory after barrier
 
-  //barrier(CLK_GLOBAL_MEM_FENCE);
+  barrier(CLK_GLOBAL_MEM_FENCE);
 
-  // if (threadID == 0) {
-  //   // Find max from global memory
-  //   for(int i = 0; i < numberOfThreads; ++i)
-  //     if(data[0] < data[i])
-  //       data[0] = data[i];
+  if (threadID == 0) {
+    // Find max from global memory
+    for(int i = 0; i < numberOfThreads; ++i)
+      if(data[0] < data[i])
+        data[0] = data[i];
 
-  //   //data[0] = maxVals[0];
-  // }
+    //data[0] = maxVals[0];
+  }
 }
