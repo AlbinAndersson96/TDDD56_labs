@@ -119,7 +119,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       partData[dataIndex] = data[i*16384 + dataIndex];
     }
 
-    //io_data = partData;
+    io_data = partData;
   	
 	  printCLError(ciErrNum,7);
 
