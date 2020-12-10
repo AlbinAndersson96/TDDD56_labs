@@ -26,7 +26,7 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 8388608
+#define kDataLength 32768
 #define MAXPRINTSIZE 16
 
 unsigned int *generateRandomData(unsigned int length)
@@ -121,6 +121,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       partData[dataIndex] = data[i*16384 + dataIndex];
     }
     
+    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+    clWaitForEvents(1, &eventWriteBuffer);
+
     //io_data = partData;
   	
 	  printCLError(ciErrNum,7);
@@ -136,8 +139,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
     maxRuns[i] = partData[0];
 
-    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-    clWaitForEvents(1, &eventWriteBuffer);
+
     printCLError(ciErrNum,11);
     
 	  printCLError(ciErrNum,10);
@@ -172,6 +174,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   unsigned int max = 0;
   for(int i = 0; i < numberOfRuns - 1; i++)
   {
+    printf("Max %d: %u\n", i, maxRuns[i]);
     if(maxRuns[i] > max)
       max = maxRuns[i];
   }
