@@ -136,9 +136,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  clReleaseMemObject(io_data);
   }
 
-  //for(int i = 0; i < numberOfRuns; i++)
-    //printf("Data %d: %u\n", i, maxRuns[i]);
-
   //Last kernel run to find max of maxes
   // if(numberOfRuns > 1)
   // {
@@ -161,8 +158,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   // 
   // data[0] = maxRuns[0];
 
-
-  printf("Data1: %u, Data2: %u\n", maxRuns[0], maxRuns[1]);
 
   //Last pass on CPU
   unsigned int max = 0;
