@@ -18,6 +18,11 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
   unsigned int maxVals[512];
 
+  for(int i = 0; i < 512; ++i)
+  {
+    maxVals[i] = 0;
+  }
+
   for(int i = threadID*numberOfDigitsPerThread; i < (threadID+1)*numberOfDigitsPerThread; i++)
   {
     if(maxVals[threadID] < data[i])
