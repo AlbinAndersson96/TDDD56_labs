@@ -1,0 +1,38 @@
+1. Make a low-pass box filter with shared memory
+    -How much data did you put in shared memory?
+        The part of the image that is "covered" by each block + enough padding to not read garbage while blurring.
+
+    -How much data does each thread copy to shared memory?
+        Each thread copies 2xbiggestkernelsize to shared memory, so a 5x5 kernel means each thread copies 10 pixels and a 5x2 kernel also copies 10 pixels
+
+    -How did you handle the necessary overlap between the blocks?
+        Each block simply read data outside the boundaries. This leads to neighbouring blocks reading some of the same data however.
+
+    -If we would like to increase the block size, about how big blocks would be safe to use in this case? Why?
+        We compute one pixel per thread in each block meaning that we cannot compute more then 1024 pixels per block meaning that the maximum safe size is 32x32
+
+    -How much speedup did you get over the naive version? For what filter size?
+        Bad kernel time: 673108 ms
+        Good kernel time: 3045 ms
+        35x35 kernel
+
+    -Is your access to global memory coalesced? What should you do to get that?
+        No, since we're reading in a cross-pattern and thus traversing memory on more than one "axis". We will thus not read the memory in sequence. 
+
+2.
+    -How much speedup did you get over the non-separated? For what filter size?
+        Bad kernel time: 834404 ms (Original)
+        Good kernel time: 11078 ms (Non-separable)
+        Best kernel time: 6314 ms (Separable)
+
+3.
+    -Compare the visual result to that of the box filter. Is the image LP-filtered with the weighted kernel noticeably better?
+
+    -What was the difference in time to a box filter of the same size (5x5)?
+
+    -If you want to make a weighted kernel customizable by weights from the host, how would you deliver the weights to the GPU?
+
+4.
+    -What kind of algorithm did you implement for finding the median?
+
+    -What filter size was best for reducing noise?
