@@ -109,15 +109,18 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int maxRuns[numberOfRuns];
 
+  unsigned int partData[16384];
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
   for(int i = 0; i < numberOfRuns; ++i) {
-    unsigned int partData[16384];
+    
     //memcpy(partData, data+numberOfRuns*16384*sizeof(unsigned int), 16384);
     for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
     {
       partData[dataIndex] = data[i*16384 + dataIndex];
     }
 
-  	io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
+    io_data = partData;
+  	
 	  printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
@@ -134,7 +137,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
     maxRuns[i] = partData[0];
 
-	  //clReleaseMemObject(io_data);
   }
 
   clReleaseMemObject(io_data);
