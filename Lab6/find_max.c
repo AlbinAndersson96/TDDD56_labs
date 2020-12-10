@@ -71,8 +71,8 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length);
   
-	
   cl_mem o_data;
+  
   unsigned int maxVals[512];
   for(int i = 0; i < 512; i++) maxVals[i] = 0;
   o_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 512 * sizeof(unsigned int), maxVals, &ciErrNum);
@@ -111,6 +111,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int partData[16384];
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
+
+  cl_event eventReadBuffer, eventWriteBuffer;
   for(int i = 0; i < numberOfRuns; ++i) {
     
     //memcpy(partData, data+numberOfRuns*16384*sizeof(unsigned int), 16384);
@@ -118,8 +120,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     {
       partData[dataIndex] = data[i*16384 + dataIndex];
     }
+    
 
-    io_data = partData;
+    //io_data = partData;
   	
 	  printCLError(ciErrNum,7);
 
@@ -127,14 +130,16 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  runKernel(gpgpuReduction, 16384, io_data, 16384);
 
 	  // Get data
-	  cl_event event;
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &event);
+	  
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
-    
-	  // Synch
-	  //clWaitForEvents(1, &event);
-	  printCLError(ciErrNum,10);
+    clWaitForEvents(1, &eventReadBuffer);
 
+    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+    clWaitForEvents(1, &eventWriteBuffer);
+    printCLError(ciErrNum,11);
+    
+	  printCLError(ciErrNum,10);
     maxRuns[i] = partData[0];
 
   }
