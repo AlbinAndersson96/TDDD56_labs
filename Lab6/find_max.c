@@ -147,6 +147,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  printCLError(ciErrNum,10);
 
     maxRuns[i] = partData[0];
+    printf("Max: %d", partData[0]);
 
 	  clReleaseMemObject(io_data);
   }
