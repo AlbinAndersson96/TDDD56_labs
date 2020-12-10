@@ -71,19 +71,19 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length);
   
-  cl_mem o_data;
+  //cl_mem o_data;
   
-  unsigned int maxVals[512];
-  for(int i = 0; i < 512; i++) maxVals[i] = 0;
-  o_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 512 * sizeof(unsigned int), maxVals, &ciErrNum);
-  ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &o_data);
+  //unsigned int maxVals[512];
+  //for(int i = 0; i < 512; i++) maxVals[i] = 0;
+  //o_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 512 * sizeof(unsigned int), maxVals, &ciErrNum);
+  //ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &o_data);
   printCLError(ciErrNum,8);
 	
 	// Run kernel
 
   cl_event event;
 
-  ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
+  //ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
   ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
 
 	printCLError(ciErrNum,9);
