@@ -89,7 +89,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	printCLError(ciErrNum,9);
 	
 	// Synch
-	//clWaitForEvents(1, &event);
+	clWaitForEvents(1, &event);
 	printCLError(ciErrNum,10);
 }
 
@@ -150,14 +150,14 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  printCLError(ciErrNum,7);
 
 	  // Write the potential maxes
-    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventWriteBuffer);
+    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, numberOfRuns * sizeof(unsigned int), maxRuns, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
 
     // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, (numberOfRuns-1), io_data, (numberOfRuns-1));
+	  runKernel(gpgpuReduction, numberOfRuns, io_data, numberOfRuns);
 
 	    // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);  
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, numberOfRuns * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);  
 	  clWaitForEvents(1, &eventReadBuffer);
     printCLError(ciErrNum,11);
 
