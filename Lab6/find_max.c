@@ -165,7 +165,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  clWaitForEvents(1, &event);
 	  printCLError(ciErrNum,10);
 
-	  clReleaseMemObject(io_data);
+	  //clReleaseMemObject(io_data);
   }
 
   clReleaseMemObject(io_data);
