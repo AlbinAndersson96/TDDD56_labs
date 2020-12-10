@@ -30,10 +30,10 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
 
   if (threadID == 0) {
     // Find max from global memory
-    for(int i = 0; i < numberOfThreads; i++)
+    for(int i = 0; i < numberOfThreads; ++i)
       if(maxVals[0] < maxVals[i])
         maxVals[0] = maxVals[i];
 
     data[0] = maxVals[0];
-  } 
+  }
 }
