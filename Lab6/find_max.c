@@ -26,7 +26,7 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 8589934592
+#define kDataLength 4294967296
 #define MAXPRINTSIZE 16
 
 unsigned int *generateRandomData(unsigned int length)
