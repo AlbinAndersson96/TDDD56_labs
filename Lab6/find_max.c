@@ -107,7 +107,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   int numberOfRuns = 1;
   if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
 
-  int maxRuns[numberOfRuns];
+  unsigned int maxRuns[numberOfRuns];
 
   for(int i = 0; i < numberOfRuns; ++i) {
     unsigned int partData[16384];
