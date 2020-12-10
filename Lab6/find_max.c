@@ -89,7 +89,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	printCLError(ciErrNum,9);
 	
 	// Synch
-	/clWaitForEvents(1, &event);
+	clWaitForEvents(1, &event);
 	printCLError(ciErrNum,10);
 }
 
