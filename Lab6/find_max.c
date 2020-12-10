@@ -89,7 +89,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	printCLError(ciErrNum,9);
 	
 	// Synch
-	clWaitForEvents(1, &event);
+	/clWaitForEvents(1, &event);
 	printCLError(ciErrNum,10);
 }
 
@@ -143,40 +143,40 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     printCLError(ciErrNum,11);
   }
 
-  //Last kernel run to find max of maxes
-  if(numberOfRuns > 1)
-  {
-    //io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, &ciErrNum);
-	  printCLError(ciErrNum,7);
-
-	  // Write the potential maxes
-    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, numberOfRuns * sizeof(unsigned int), maxRuns, 0, NULL, &eventWriteBuffer);
-    clWaitForEvents(1, &eventWriteBuffer);
-
-    // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, numberOfRuns, io_data, numberOfRuns);
-
-	    // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, numberOfRuns * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);  
-	  clWaitForEvents(1, &eventReadBuffer);
-    printCLError(ciErrNum,11);
-
-  }
-
-  clReleaseMemObject(io_data);
-
-  data[0] = maxRuns[0];
-
-
-  // //Last pass on CPU
-  // unsigned int max = 0;
-  // for(int i = 0; i < numberOfRuns - 1; i++)
+  // //Last kernel run to find max of maxes
+  // if(numberOfRuns > 1)
   // {
-  //   //printf("Max %d: %u\n", i, maxRuns[i]);
-  //   if(maxRuns[i] > max)
-  //     max = maxRuns[i];
+  //   //io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, &ciErrNum);
+	//   printCLError(ciErrNum,7);
+
+	//   // Write the potential maxes
+  //   ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventWriteBuffer);
+  //   clWaitForEvents(1, &eventWriteBuffer);
+
+  //   // ********** RUN THE KERNEL ************
+	//   runKernel(gpgpuReduction, (numberOfRuns-1), io_data, (numberOfRuns-1));
+
+	//     // Get data
+	//   ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, (numberOfRuns-1) * sizeof(unsigned int), maxRuns, 0, NULL, &eventReadBuffer);  
+	//   clWaitForEvents(1, &eventReadBuffer);
+  //   printCLError(ciErrNum,11);
+
   // }
-  // data[0] = max;
+
+  // clReleaseMemObject(io_data);
+
+  // data[0] = maxRuns[0];
+
+
+  //Last pass on CPU
+  unsigned int max = 0;
+  for(int i = 0; i < numberOfRuns - 1; i++)
+  {
+    //printf("Max %d: %u\n", i, maxRuns[i]);
+    if(maxRuns[i] > max)
+      max = maxRuns[i];
+  }
+  data[0] = max;
   
 
 	return ciErrNum;
