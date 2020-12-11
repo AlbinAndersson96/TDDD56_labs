@@ -148,7 +148,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     clWaitForEvents(1, &eventReadBuffer);
 
     for(int t = 0; t < 1024; ++t) {
-      maxRuns[i] = max(maxRuns[i], partData[t])
+      maxRuns[i] = max(maxRuns[i], partData[t]);
     }
   }
 
