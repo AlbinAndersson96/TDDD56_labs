@@ -26,8 +26,8 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 67108864
-//#define kDataLength 268435456
+//#define kDataLength 67108864
+#define kDataLength 268435456
 //#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
 
