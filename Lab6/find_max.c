@@ -64,8 +64,8 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	cl_int ciErrNum = CL_SUCCESS;
 	
 	// Some reasonable number of blocks based on # of threads
-	if (threads<512) localWorkSize  = threads;
-	else            localWorkSize  = 512;
+	if (threads<256) localWorkSize  = threads;
+	else            localWorkSize  = 256;
 		globalWorkSize = threads;
 	
 	// set the args values
@@ -123,7 +123,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     }
 
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-    //clWaitForEvents(1, &eventWriteBuffer);
+    clWaitForEvents(1, &eventWriteBuffer);
   	
 	  //printCLError(ciErrNum,7);
 
@@ -134,7 +134,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
  
 	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  //printCLError(ciErrNum,11);
-    //clWaitForEvents(1, &eventReadBuffer);
+    clWaitForEvents(1, &eventReadBuffer);
 
     maxRuns[i] = partData[0];
 
@@ -205,7 +205,7 @@ int main( int argc, char** argv)
   find_max_cpu(data_cpu,length);
   printf("CPU %f\n", GetSeconds());
 
-  ResetMilli(); // You may consider moving this inside find_max_gpu(), to skip timing of data allocation.
+  //ResetMilli(); // You may consider moving this inside find_max_gpu(), to skip timing of data allocation.
   find_max_gpu(data_gpu,length);
   printf("GPU %f\n", GetSeconds());
 
