@@ -150,7 +150,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       if (maxRuns[i] < partData[t]) {
         printf("New max: %d\n", partData[t]);
         maxRuns[i] = partData[t];
-        }
+      }
     }
   }
 
@@ -159,8 +159,11 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   for(int i = 0; i < numberOfRuns - 1; i++)
   {
     //printf("Max %d: %u\n", i, maxRuns[i]);
-    if(maxRuns[i] > max)
+    if(maxRuns[i] > max) {
+      printf("New max: %d\n", maxRuns[i]);
       max = maxRuns[i];
+    }
+      
   }
   data[0] = max;
   
