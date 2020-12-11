@@ -123,9 +123,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     }
 
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-    clWaitForEvents(1, &eventWriteBuffer);
+    //clWaitForEvents(1, &eventWriteBuffer);
   	
-	  printCLError(ciErrNum,7);
+	  //printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
 	  runKernel(gpgpuReduction, 16384, io_data, 16384);
@@ -133,13 +133,13 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  // Get data
  
 	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-	  printCLError(ciErrNum,11);
-    clWaitForEvents(1, &eventReadBuffer);
+	  //printCLError(ciErrNum,11);
+    //clWaitForEvents(1, &eventReadBuffer);
 
     maxRuns[i] = partData[0];
 
 
-    printCLError(ciErrNum,11);
+    //printCLError(ciErrNum,11);
   }
 
   //Last pass on CPU
