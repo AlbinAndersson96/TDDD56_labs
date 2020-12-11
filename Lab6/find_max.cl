@@ -5,7 +5,7 @@
 #define THREADS 256
 __kernel void find_max(__global unsigned int *data, const unsigned int length)
 { 
-  size_t threadID = get_global_id(0);
+  size_t threadID = get_local_id(0);
   size_t numberOfThreads = 0;
 
   // if(16384 < 256)
