@@ -84,16 +84,18 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length);
   
   printCLError(ciErrNum,8);
-  printf("ASDASDASDASDASDASD\n");
+  
 	
 	// Run kernel
   cl_event event;
   ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
 
+  printf("ASDASDASDASDASDASD 1\n");
 	printCLError(ciErrNum,9);
 	
 	// Synch
 	clWaitForEvents(1, &event);
+  printf("ASDASDASDASDASDASD 2\n");
 	printCLError(ciErrNum,10);
 }
 
