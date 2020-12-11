@@ -28,8 +28,8 @@
 #define MAXPRINTSIZE 16
 
 // Size of data!
-#define kDataLength 67108864
-//#define kDataLength 268435456
+//#define kDataLength 67108864
+#define kDataLength 268435456
 //#define kDataLength 1073741824
 
 // #define THREADS 256
@@ -132,7 +132,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
 
 	  // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
