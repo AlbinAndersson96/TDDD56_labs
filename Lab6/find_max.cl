@@ -2,7 +2,7 @@
  * Placeholder OpenCL kernel
  */
 
-#define THREADS 1024
+#define THREADS 512
 __kernel void find_max(__global unsigned int *data, const unsigned int length)
 { 
   size_t threadIDLocal = get_local_id(0);

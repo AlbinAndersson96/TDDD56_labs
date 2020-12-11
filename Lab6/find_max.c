@@ -40,8 +40,8 @@
 // #define THREADS 256
 // #define PART_SIZE 16384
 
-#define THREADS 1024
-#define PART_SIZE 16384
+#define THREADS 512
+#define PART_SIZE 8192
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -146,11 +146,11 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
 
 	  // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 1024*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
-    for(int t = 0; t < 1024; ++t) {
+    for(int t = 0; t < THREADS; ++t) {
       if (maxRuns[i] < partData[t]) {
         //printf("New max: %d\n", partData[t]);
         maxRuns[i] = partData[t];
