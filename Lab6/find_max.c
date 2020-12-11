@@ -25,20 +25,21 @@
 #include "CLutilities.h"
 #include "milli.h"
 
-// Size of data!
-//#define kDataLength 67108864
-#define kDataLength 268435456
-//#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
 
-//#define THREADS 256
-//#define PART_SIZE 8192
+// Size of data!
+//#define kDataLength 67108864
+//#define kDataLength 268435456
+#define kDataLength 1073741824
+
+#define THREADS 256
+#define PART_SIZE 32768
 
 //#define THREADS 512
 //#define PART_SIZE 16384
 
-#define THREADS 1024
-#define PART_SIZE 16384
+// #define THREADS 512
+// #define PART_SIZE 16384
 
 unsigned int *generateRandomData(unsigned int length)
 {
