@@ -36,7 +36,7 @@
 // #define PART_SIZE 16384
 
 #define THREADS 512
-#define PART_SIZE 4096
+#define PART_SIZE 16384
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -111,10 +111,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1;
 
   unsigned int maxRuns[numberOfRuns];
-
   unsigned int partData[PART_SIZE];
 
-  //printf("%d\n", 	CL_HOST_MAX_MEM_ALLOC_SIZE );
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
