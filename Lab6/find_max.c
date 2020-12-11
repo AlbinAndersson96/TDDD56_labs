@@ -96,7 +96,6 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
   
   printCLError(ciErrNum,8);
   
-	
 	// Run kernel
   cl_event event;
   ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
