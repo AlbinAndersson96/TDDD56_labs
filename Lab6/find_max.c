@@ -76,10 +76,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
   printCLError(ciErrNum,8);
 	
 	// Run kernel
-
   cl_event event;
-
-  //ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
   ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
 
 	printCLError(ciErrNum,9);
@@ -101,7 +98,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > THREADS) numberOfRuns = (kDataLength / THREADS) + 1;
+  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
 
   unsigned int maxRuns[numberOfRuns];
 
