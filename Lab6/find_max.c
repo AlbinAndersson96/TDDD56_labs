@@ -40,7 +40,7 @@
 // #define PART_SIZE 16384
 
 #define THREADS 256
-#define PART_SIZE 8192
+#define PART_SIZE 16384
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -75,6 +75,7 @@ unsigned int *generateRandomData(unsigned int length)
 // __kernel void sort(__global unsigned int *data, const unsigned int length)
 void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 {
+  // threads = 16384, length = 16384
 	size_t localWorkSize, globalWorkSize;
 	cl_int ciErrNum = CL_SUCCESS;
 	
@@ -82,10 +83,14 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	if (threads < THREADS) localWorkSize  = threads;
 	else            localWorkSize  = THREADS;
 		globalWorkSize = threads;
+
+    // localWorkSize = 256
+    // globalWorkSize = 16384
+    // numberPerThread = 16384/256 = 64
 	
 	// set the args values
-	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
-	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length);
+	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
+	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length); // 16384
   
   printCLError(ciErrNum,8);
   
@@ -111,11 +116,11 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1;
+  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 1024 times
 
-  unsigned int maxRuns[numberOfRuns];
+  unsigned int maxRuns[numberOfRuns]; // 1024 size (1024 maxes)
 
-  unsigned int partData[PART_SIZE];
+  unsigned int partData[PART_SIZE]; // 16384
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
@@ -129,7 +134,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
-  	
 	  printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
