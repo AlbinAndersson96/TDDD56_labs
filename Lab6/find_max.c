@@ -26,9 +26,10 @@
 #include "milli.h"
 
 // Size of data!
-//#define kDataLength 268435456
-#define kDataLength 1073741824
+#define kDataLength 268435456
+//#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
+#define THREADS 256
 
 unsigned int *generateRandomData(unsigned int length)
 {
@@ -72,12 +73,6 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data);
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length);
   
-  //cl_mem o_data;
-  
-  //unsigned int maxVals[512];
-  //for(int i = 0; i < 512; i++) maxVals[i] = 0;
-  //o_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 512 * sizeof(unsigned int), maxVals, &ciErrNum);
-  //ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &o_data);
   printCLError(ciErrNum,8);
 	
 	// Run kernel
@@ -106,7 +101,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
+  if (kDataLength > THREADS) numberOfRuns = (kDataLength / THREADS) + 1;
 
   unsigned int maxRuns[numberOfRuns];
 
@@ -125,21 +120,19 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
   	
-	  //printCLError(ciErrNum,7);
+	  printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, 256, io_data, 16384);
+	  runKernel(gpgpuReduction, THREADS, io_data, 16384);
 
 	  // Get data
  
 	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-	  //printCLError(ciErrNum,11);
+	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
     maxRuns[i] = partData[0];
 
-
-    //printCLError(ciErrNum,11);
   }
 
   //Last pass on CPU
