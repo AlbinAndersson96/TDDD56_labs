@@ -25,7 +25,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
   barrier(CLK_GLOBAL_MEM_FENCE);
   
   if (get_local_id(0) == 0) {
-    for (int i = 0; i < get_local_size(0); ++i) {
+    for (int i = 0; i <= get_local_size(0); ++i) {
       if (tmp[0] < tmp[i]) tmp[0] = tmp[i];
     }
   }
