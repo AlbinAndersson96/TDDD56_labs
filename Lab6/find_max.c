@@ -128,7 +128,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     clWaitForEvents(1, &eventWriteBuffer);
   	
 	  printCLError(ciErrNum,7);
-    printf("ASDOJASDIOJAOISJDAOISJD\n");
 
 	  // ********** RUN THE KERNEL ************
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
