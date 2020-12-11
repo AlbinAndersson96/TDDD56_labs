@@ -7,11 +7,11 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   size_t threadID = get_global_id(0);
   size_t numberOfThreads = 0;
 
-  if (length < 256) numberOfThreads = length;
-  else numberOfThreads = 256;
+  // if (length < 512) numberOfThreads = length;
+  // else numberOfThreads = 512;
 
   // Not optimal, but it did not have to be :)
-  size_t numberOfDigitsPerThread = length / numberOfThreads; // Eeach thread is responsible for this many digits (unsigned ints)
+  size_t numberOfDigitsPerThread = length / get_local_size(0); // Eeach thread is responsible for this many digits (unsigned ints)
 
   for(int i = threadID*numberOfDigitsPerThread; i < (threadID+1)*numberOfDigitsPerThread; ++i)
   {

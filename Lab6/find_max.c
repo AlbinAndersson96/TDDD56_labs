@@ -64,8 +64,8 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	cl_int ciErrNum = CL_SUCCESS;
 	
 	// Some reasonable number of blocks based on # of threads
-	if (threads<256) localWorkSize  = threads;
-	else            localWorkSize  = 256;
+	if (threads < 512) localWorkSize  = threads;
+	else            localWorkSize  = 512;
 		globalWorkSize = threads;
 	
 	// set the args values
@@ -106,33 +106,33 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > 32768) numberOfRuns = (kDataLength / 32768) + 1;
+  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
 
   unsigned int maxRuns[numberOfRuns];
 
-  unsigned int partData[32768];
-  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 32768 * sizeof(unsigned int), partData, &ciErrNum);
+  unsigned int partData[16384];
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
   for(int i = 0; i < numberOfRuns; ++i) {
     
-    for(int dataIndex = 0; dataIndex < 32768; ++dataIndex)
+    for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
     {
-      partData[dataIndex] = data[i*32768 + dataIndex];
+      partData[dataIndex] = data[i*16384 + dataIndex];
     }
 
-    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 32768*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
   	
 	  //printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, 32768, io_data, 32768);
+	  runKernel(gpgpuReduction, 256, io_data, 16384);
 
 	  // Get data
  
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 32768 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  //printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
