@@ -82,7 +82,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	// Some reasonable number of blocks based on # of threads
 	if (threads < THREADS) localWorkSize  = threads;
 	else            localWorkSize  = THREADS;
-		globalWorkSize = threads;
+		globalWorkSize = localWorkSize;
 
     // localWorkSize = 256
     // globalWorkSize = 16384
@@ -143,12 +143,13 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
 
 	  // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 1024*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
-    maxRuns[i] = partData[0];
-
+    for(int t = 0; t < 1024; ++t) {
+      maxRuns[i] = max(maxRuns[i], partData[t])
+    }
   }
 
   //Last pass on CPU

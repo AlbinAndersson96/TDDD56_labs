@@ -6,27 +6,17 @@
 __kernel void find_max(__global unsigned int *data, const unsigned int length, __local unsigned int *tmp)
 { 
   size_t threadIDLocal = get_local_id(0);
-  size_t threadIDGlobal = get_global_id(0);
-  size_t numberOfThreads = 0;
 
-  // if(16384 < 256)
-  // if (length < THREADS) numberOfThreads = length;
-  // else numberOfThreads = THREADS; //256
-
-  // Not optimal, but it did not have to be :)
-  // 8192 / 1024 = 8
-  //size_t numberOfDigitsPerThread = length / get_local_size(0); // Eeach thread is responsible for this many digits (unsigned ints)
-
-  // for(int i = threadID; i < (threadID+1); ++i)
-  // {
-  //if(tmp)
-  tmp[threadIDLocal] = data[threadIDGlobal];
-
-  barrier(CLK_GLOBAL_MEM_FENCE);
+  size_t threadIDGlobal1 = get_global_id(0);
+  size_t threadIDGlobal2 = threadIDGlobal1*2;
   
-  if (tmp[0] < tmp[threadIDLocal]) tmp[0] = tmp[threadIDLocal];
+  size_t numberOfDigits = length / get_local_size();
 
-  barrier(CLK_LOCAL_MEM_FENCE);
+  int biggest = 0;
+  for (int i = threadIDLocal; i < numberOfDigits*get_local_size(); i += get_local_size()) {
+    biggest = max(biggest, data[i]);
+  }
 
-  data[0] = tmp[0];
+  data[threadIDLocal] = biggest;
+  
 }
