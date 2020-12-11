@@ -84,6 +84,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length);
   
   printCLError(ciErrNum,8);
+  prtinf("ASDASDASDASDASDASD\n");
 	
 	// Run kernel
   cl_event event;
