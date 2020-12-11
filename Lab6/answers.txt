@@ -11,13 +11,11 @@
 
 2. Reduction
 -What timing did you get for your GPU reduction? Compare it to the CPU version.
-    With default values: CPU 0.000004, GPU 0.000743
+    With data lenght of 2^30: CPU 1.820693 GPU 5.301290
 
 -Try larger data size. On what size does the GPU version get faster, or at least comparable, to the GPU?
-    It never gets faster. The best we could get was CPU 0.000102, GPU 0.001042 with a data size of 16 384
-    which is still an entire magnitude slower. Any larger datasets yielded us CL_OUT_OF_RESOURCES.
-    This is most likely due to us using global memory in the kernel as well as relying on a single thread
-    to do the final step of the computation.
+    It never gets faster. The best we could get was the run above which is still half as fast.
+    Any larger datasets yielded us segmentation faults.
 
 -How can you optimize this further? You should know at least one way.
     You can optimize this further by using local memory on the GPU together with utilizing local thread IDs
