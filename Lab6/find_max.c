@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <cmath>
 #ifdef __APPLE__
   #include <OpenCL/opencl.h>
   #include <GLUT/glut.h>
