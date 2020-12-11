@@ -40,7 +40,7 @@
 // #define PART_SIZE 16384
 
 #define THREADS 512
-#define PART_SIZE 65536
+#define PART_SIZE 8192
 
 // #define THREADS 512
 // #define PART_SIZE 16384
