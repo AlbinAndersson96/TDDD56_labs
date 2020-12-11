@@ -19,7 +19,7 @@ __kernel void find_max(__local unsigned int *data, const unsigned int length)
 
   // for(int i = threadID; i < (threadID+1); ++i)
   // {
-  if(tmp)
+  //if(tmp)
   if(data[threadIDLocal] < data[threadIDGlobal]) data[threadIDLocal] = data[threadIDGlobal];
     //   data[threadIDGlobal] = data[i];
   // }
