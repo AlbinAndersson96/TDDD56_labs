@@ -86,7 +86,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 
     // localWorkSize = 256
     // globalWorkSize = 16384
-    // numberPerThread = 16384/256 = 64
+    // numberPerThread = 8192/1024 = 8
 	
 	// set the args values
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
@@ -116,11 +116,11 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 1024 times
+  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 32768 times
 
-  unsigned int maxRuns[numberOfRuns]; // 1024 size (1024 maxes)
+  unsigned int maxRuns[numberOfRuns]; // 32768 size (32768 maxes)
 
-  unsigned int partData[PART_SIZE]; // 16384
+  unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
