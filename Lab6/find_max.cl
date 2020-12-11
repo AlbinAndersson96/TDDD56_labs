@@ -3,7 +3,7 @@
  */
 
 #define THREADS 1024
-__kernel void find_max(__global unsigned int *data, const unsigned int length)
+__kernel void find_max(__local unsigned int *data, const unsigned int length)
 { 
   size_t threadIDLocal = get_local_id(0);
   size_t threadIDGlobal = get_global_id(0);
@@ -19,6 +19,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
   // for(int i = threadID; i < (threadID+1); ++i)
   // {
+  if(tmp)
   if(data[threadIDLocal] < data[threadIDGlobal]) data[threadIDLocal] = data[threadIDGlobal];
     //   data[threadIDGlobal] = data[i];
   // }
