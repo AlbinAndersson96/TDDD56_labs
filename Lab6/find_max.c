@@ -30,7 +30,7 @@
 // Size of data!
 //#define kDataLength 67108864
 //#define kDataLength 268435456
-#define kDataLength 1073741824
+#define kDataLength 1073741824*2
 
 // #define THREADS 256
 // #define PART_SIZE 16384
