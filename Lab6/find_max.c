@@ -94,7 +94,6 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	
 	// Synch
 	clWaitForEvents(1, &event);
-	printCLError(ciErrNum,10);
 }
 
 
@@ -134,9 +133,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
 
 	  // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-	  printCLError(ciErrNum,11);
-    clWaitForEvents(1, &eventReadBuffer);
+	  //ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  //printCLError(ciErrNum,11);
+    //clWaitForEvents(1, &eventReadBuffer);
 
     maxRuns[i] = partData[0];
 
