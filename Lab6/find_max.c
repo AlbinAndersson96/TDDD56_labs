@@ -40,7 +40,7 @@
 // #define PART_SIZE 16384
 
 #define THREADS 1024
-#define PART_SIZE 16384/2
+#define PART_SIZE 8192
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -116,9 +116,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 32768 times
+  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
 
-  unsigned int maxRuns[numberOfRuns]; // 32768 size (32768 maxes)
+  unsigned int maxRuns[numberOfRuns]; // 131072 size (131072 maxes)
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
