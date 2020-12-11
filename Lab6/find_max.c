@@ -71,8 +71,8 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	cl_int ciErrNum = CL_SUCCESS;
 	
 	// Some reasonable number of blocks based on # of threads
-	if (threads < 256) localWorkSize  = threads;
-	else            localWorkSize  = 256;
+	if (threads < THREADS) localWorkSize  = threads;
+	else            localWorkSize  = THREADS;
 		globalWorkSize = threads;
 	
 	// set the args values

@@ -2,13 +2,14 @@
  * Placeholder OpenCL kernel
  */
 
+#define THREADS 1024
 __kernel void find_max(__global unsigned int *data, const unsigned int length)
 { 
   size_t threadID = get_global_id(0);
   size_t numberOfThreads = 0;
 
-  if (length < 256) numberOfThreads = length;
-  else numberOfThreads = 256;
+  if (length < THREADS) numberOfThreads = length;
+  else numberOfThreads = THREADS;
 
   // Not optimal, but it did not have to be :)
   size_t numberOfDigitsPerThread = length / numberOfThreads; // Eeach thread is responsible for this many digits (unsigned ints)
