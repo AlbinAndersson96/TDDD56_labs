@@ -35,7 +35,7 @@
 // #define PART_SIZE 8192
 
 #define THREADS 1024
-#define PART_SIZE 4096
+#define PART_SIZE 32768
 
 unsigned int *generateRandomData(unsigned int length)
 {
