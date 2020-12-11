@@ -26,8 +26,8 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 268435456
-//#define kDataLength 1073741824
+//#define kDataLength 268435456
+#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
 
 unsigned int *generateRandomData(unsigned int length)
@@ -117,7 +117,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   ResetMilli();
   for(int i = 0; i < numberOfRuns; ++i) {
     
-
     for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
     {
       partData[dataIndex] = data[i*16384 + dataIndex];
