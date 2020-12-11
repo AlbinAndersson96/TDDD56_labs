@@ -39,8 +39,8 @@
 // #define THREADS 256
 // #define PART_SIZE 16384
 
-#define THREADS 2048
-#define PART_SIZE 32768*2
+#define THREADS 1024
+#define PART_SIZE 32768*4
 
 // #define THREADS 512
 // #define PART_SIZE 16384
