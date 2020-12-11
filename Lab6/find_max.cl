@@ -10,6 +10,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   size_t threadIDGlobal1 = get_global_id(0);
   size_t threadIDGlobal2 = threadIDGlobal1*2;
   
+  // 8192 / 1024 = 8
   size_t numberOfDigits = length / get_local_size(0);
 
   int biggest = 33554432+1;
