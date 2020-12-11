@@ -26,7 +26,8 @@
 #include "milli.h"
 
 // Size of data!
-#define kDataLength 268435456
+#define kDataLength 67108864
+//#define kDataLength 268435456
 //#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
 #define THREADS 256
@@ -120,7 +121,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, THREADS, io_data, 16384);
+	  runKernel(gpgpuReduction, 16384, io_data, 16384);
 
 	  // Get data
  
