@@ -30,7 +30,11 @@
 //#define kDataLength 268435456
 //#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
-#define THREADS 256
+
+// #define THREADS 256
+// #define PART_SIZE 8192
+
+#define THREADS 128
 #define PART_SIZE 8192
 
 unsigned int *generateRandomData(unsigned int length)
