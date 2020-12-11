@@ -89,10 +89,12 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	// Run kernel
   cl_event event;
   ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
-  clWaitForEvents(1, &event);
 
 	printCLError(ciErrNum,9);
 	
+	// Synch
+	clWaitForEvents(1, &event);
+	printCLError(ciErrNum,10);
 }
 
 
@@ -110,8 +112,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1;
 
   unsigned int maxRuns[numberOfRuns];
-  unsigned int partData[PART_SIZE];
 
+  unsigned int partData[PART_SIZE];
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
