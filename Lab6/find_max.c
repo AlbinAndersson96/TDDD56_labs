@@ -153,7 +153,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   //Last pass on CPU
   unsigned int max = 0;
-  for(int i = 0; i < numberOfRuns; i++)
+  for(int i = 0; i < numberOfRuns - 1; i++)
   {
     //printf("Max %d: %u\n", i, maxRuns[i]);
     if(maxRuns[i] > max)
