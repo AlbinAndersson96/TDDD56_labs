@@ -22,6 +22,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
       data[threadID] = data[i];
   }
 
-  barrier(CLK_GLOBAL_MEM_FENCE);
+  //barrier(CLK_GLOBAL_MEM_FENCE);
   if (data[0] < data[threadID]) data[0] = data[threadID];
 }
