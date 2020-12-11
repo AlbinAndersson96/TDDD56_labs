@@ -115,6 +115,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   unsigned int partData[PART_SIZE];
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
+  printf("ASDOJASDIOJAOISJDAOISJD\n");
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
   for(int i = 0; i < numberOfRuns; ++i) {
@@ -128,6 +129,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     clWaitForEvents(1, &eventWriteBuffer);
   	
 	  printCLError(ciErrNum,7);
+    printf("ASDOJASDIOJAOISJDAOISJD\n");
 
 	  // ********** RUN THE KERNEL ************
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
