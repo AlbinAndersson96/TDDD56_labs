@@ -114,7 +114,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int partData[PART_SIZE];
 
-  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_USE_ALLOC_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
+  //printf("%d\n", 	CL_HOST_MAX_MEM_ALLOC_SIZE );
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
