@@ -31,6 +31,7 @@
 //#define kDataLength 1073741824
 #define MAXPRINTSIZE 16
 #define THREADS 256
+#define PART_SIZE 8192
 
 unsigned int *generateRandomData(unsigned int length)
 {
@@ -99,33 +100,33 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
-  if (kDataLength > 16384) numberOfRuns = (kDataLength / 16384) + 1;
+  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1;
 
   unsigned int maxRuns[numberOfRuns];
 
-  unsigned int partData[16384];
-  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 16384 * sizeof(unsigned int), partData, &ciErrNum);
+  unsigned int partData[PART_SIZE];
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
   for(int i = 0; i < numberOfRuns; ++i) {
     
-    for(int dataIndex = 0; dataIndex < 16384; ++dataIndex)
+    for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex)
     {
       partData[dataIndex] = data[i*16384 + dataIndex];
     }
 
-    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, 16384*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
   	
 	  printCLError(ciErrNum,7);
 
 	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, 16384, io_data, 16384);
+	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
 
 	  // Get data
  
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, 16384 * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
