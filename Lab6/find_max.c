@@ -28,8 +28,8 @@
 #define MAXPRINTSIZE 16
 
 // Size of data!
-//#define kDataLength 67108864
-#define kDataLength 268435456
+#define kDataLength 67108864
+//#define kDataLength 268435456
 //#define kDataLength 1073741824
 
 // #define THREADS 256
@@ -97,9 +97,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	printCLError(ciErrNum,10);
 }
 
-
 static cl_kernel gpgpuReduction;
-static cl_kernel gpgpuReductionTwo;
 
 int find_max_gpu(unsigned int *data, unsigned int length)
 {
