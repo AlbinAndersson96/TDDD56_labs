@@ -117,9 +117,13 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
+  // 33554432 / 8192 = 4096
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
 
   unsigned int maxRuns[numberOfRuns]; // 131072 size (131072 maxes)
+  for(int i = 0; i < numberOfRuns; ++i) {
+    maxRuns[i] = 0;
+  }
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
