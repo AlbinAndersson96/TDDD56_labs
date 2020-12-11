@@ -14,7 +14,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
   int biggest = 0;
   for (int i = threadIDLocal; i < numberOfDigits*get_local_size(0); i += get_local_size(0)) {
-    biggest = max(biggest, data[i]);
+    biggest = 1;
   }
 
   data[threadIDLocal] = biggest;
