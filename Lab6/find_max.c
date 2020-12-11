@@ -34,7 +34,7 @@
 // #define THREADS 256
 // #define PART_SIZE 8192
 
-#define THREADS 128
+#define THREADS 1024
 #define PART_SIZE 4096
 
 unsigned int *generateRandomData(unsigned int length)
