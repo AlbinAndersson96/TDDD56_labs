@@ -134,10 +134,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
 
 	  // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-    printf("ASDASDASDASDASDASD 1\n");
+	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
-    printf("ASDASDASDASDASDASD 2\n");
     clWaitForEvents(1, &eventReadBuffer);
 
     maxRuns[i] = partData[0];
