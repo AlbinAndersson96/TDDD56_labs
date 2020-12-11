@@ -33,7 +33,7 @@
 //#define kDataLength 1073741824
 
 #define THREADS 256
-#define PART_SIZE 32768
+#define PART_SIZE 16384
 
 //#define THREADS 512
 //#define PART_SIZE 16384
@@ -137,7 +137,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE * sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
-    printf("ASDOJASDIOJAOISJDAOISJD\n");
 
     maxRuns[i] = partData[0];
 
