@@ -19,17 +19,17 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
   // for(int i = threadID; i < (threadID+1); ++i)
   // {
-  if(data[threadIDGlobal] > data[threadIDLocal]) data[threadIDLocal] = data[threadIDGlobal];
+  if(data[threadIDLocal] < data[threadIDGlobal]) data[threadIDLocal] = data[threadIDGlobal];
     //   data[threadIDGlobal] = data[i];
   // }
 
   
 
   barrier(CLK_GLOBAL_MEM_FENCE);
-  if (data[0] < data[threadIDLocal]) data[0] = data[threadIDLocal];
-  
-  //if (get_local_id(0) == 0) {
-  //   for (int i = 0; i < get_local_size(0); ++i) {
   //if (data[0] < data[threadIDLocal]) data[0] = data[threadIDLocal];
- // }
+  
+  if (get_local_id(0) == 0) {
+    for (int i = 0; i < get_local_size(0); ++i) {
+      if (data[0] < data[i]) data[0] = data[i];
+  }
 }
