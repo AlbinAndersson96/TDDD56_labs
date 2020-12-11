@@ -32,11 +32,11 @@
 //#define kDataLength 268435456
 //#define kDataLength 1073741824
 
-#define THREADS 256
-#define PART_SIZE 16384
+// #define THREADS 256
+// #define PART_SIZE 16384
 
-//#define THREADS 512
-//#define PART_SIZE 16384
+#define THREADS 512
+#define PART_SIZE 16384
 
 // #define THREADS 512
 // #define PART_SIZE 16384
