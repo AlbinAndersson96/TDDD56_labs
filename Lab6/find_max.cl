@@ -31,5 +31,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   if (get_local_id(0) == 0) {
     for (int i = 0; i < get_local_size(0); ++i) {
       if (data[0] < data[i]) data[0] = data[i];
+    }
   }
 }
