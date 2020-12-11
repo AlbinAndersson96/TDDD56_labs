@@ -90,6 +90,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	
 	// set the args values
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
+  ciErrNum  = clSetKernelArg(kernel, 2, localWorkSize*sizeof(cl_uint),  NULL); // partData
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length); // 16384
   //ciErrNum |= clSetKernelArg(kernel, 2, localWorkSize*sizeof(cl_uint), NULL); // 16384
   

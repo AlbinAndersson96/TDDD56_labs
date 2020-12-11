@@ -3,7 +3,7 @@
  */
 
 #define THREADS 1024
-__kernel void find_max(__local unsigned int *data, const unsigned int length)
+__kernel void find_max(__global unsigned int *data, const unsigned int length, __local unsigned int *tmp)
 { 
   size_t threadIDLocal = get_local_id(0);
   size_t threadIDGlobal = get_global_id(0);
@@ -20,18 +20,15 @@ __kernel void find_max(__local unsigned int *data, const unsigned int length)
   // for(int i = threadID; i < (threadID+1); ++i)
   // {
   //if(tmp)
-  if(data[threadIDLocal] < data[threadIDGlobal]) data[threadIDLocal] = data[threadIDGlobal];
-    //   data[threadIDGlobal] = data[i];
-  // }
-
-  
+  tmp[threadIDLocal] = data[threadIDGlobal];
 
   barrier(CLK_GLOBAL_MEM_FENCE);
-  //if (data[0] < data[threadIDLocal]) data[0] = data[threadIDLocal];
   
   if (get_local_id(0) == 0) {
     for (int i = 0; i < get_local_size(0); ++i) {
-      if (data[0] < data[i]) data[0] = data[i];
+      if (tmp[0] < tmp[i]) tmp[0] = tmp[i];
     }
   }
+
+  data[0] = tmp[0];
 }
