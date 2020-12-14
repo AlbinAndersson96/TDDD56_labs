@@ -84,7 +84,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, cl_mem intermediate, 
 	// Some reasonable number of blocks based on # of threads
 	if (threads < THREADS) localWorkSize  = threads;
 	else            localWorkSize  = THREADS;
-		globalWorkSize = threads;
+		globalWorkSize = localWorkSize;
 	
 	// set the args values
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
@@ -126,37 +126,37 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, kDataLength * sizeof(unsigned int), data, &ciErrNum);
-  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, THREADS * sizeof(unsigned int), NULL, &ciErrNum);
-  printf("Intermediate size: %d\n", THREADS);
+  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
+  printf("Intermediate size: %d\n", numberOfRuns * THREADS);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
 
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
-  //if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
+    if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
 
-  //for(int i = 0; i < numberOfRuns; ++i) {
-    // for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
-    //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
-    // }
+    for(int i = 0; i < numberOfRuns; ++i) {
+      for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
+        partData[dataIndex] = data[i*PART_SIZE + dataIndex];
+      }
 
-    // ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-    // clWaitForEvents(1, &eventWriteBuffer);
-    // printCLError(ciErrNum,7);
+      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+      clWaitForEvents(1, &eventWriteBuffer);
+	    printCLError(ciErrNum,7);
 
-    runKernel(gpgpuReduction, kDataLength, io_data, intermediate, PART_SIZE, 1);
-
+      runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, i);
+    }
   }
 
   unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS));
-  ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, THREADS*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
+  ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, currentSize*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
   printCLError(ciErrNum,11);
   clWaitForEvents(1, &eventReadBuffer);
 
-  printf("The CPU will handle the reduced output of size: %d\n", THREADS);
+  printf("The CPU will handle the reduced output of size: %d\n", currentSize);
   unsigned int max = 0;
-  for(int t = 0; t < THREADS; ++t) {
+  for(int t = 0; t < currentSize; ++t) {
     if (max < data[t]) {
       max = data[t];
     }
