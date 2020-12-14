@@ -121,12 +121,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   int numberOfRuns = kDataLength / PART_SIZE, currentLength = kDataLength;
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
 
-  // unsigned int maxRuns[numberOfRuns]; // 131072 size (131072 maxes)
-  // for(int i = 0; i < numberOfRuns; ++i) {
-  //   maxRuns[i] = 0;
-  // }
-
-  
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
@@ -157,14 +151,15 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   printCLError(ciErrNum,11);
   clWaitForEvents(1, &eventReadBuffer);
 
-    unsigned int max = 0;
-    for(int t = 0; t < currentSize; ++t) {
-      if (max < data[t]) {
-        max = data[t];
-      }
+  printf("Current size: %d", )
+  unsigned int max = 0;
+  for(int t = 0; t < currentSize; ++t) {
+    if (max < data[t]) {
+      max = data[t];
     }
+  }
 
-    data[0] = max;
+  data[0] = max;
   // for(int i = 0; i < numberOfRuns; ++i) {
     
   //   for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex)
