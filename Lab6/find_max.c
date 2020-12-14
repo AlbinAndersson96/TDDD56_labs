@@ -34,8 +34,8 @@
 //#define kDataLength 16777216
 //#define kDataLength 33554432
 //#define kDataLength 67108864
-//#define kDataLength 268435456
-#define kDataLength 1073741824
+#define kDataLength 268435456
+//#define kDataLength 1073741824
 
 // #define THREADS 256
 // #define PART_SIZE 16384
@@ -127,8 +127,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   }
 
   unsigned int partData[PART_SIZE]; // 8192
-  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
-  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, sizeOfBatchOutput * sizeof(unsigned int), NULL, &ciErrNum);
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
+  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeOfBatchOutput * sizeof(unsigned int), NULL, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
