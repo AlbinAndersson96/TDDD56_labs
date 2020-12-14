@@ -40,9 +40,9 @@
 // #define THREADS 256
 // #define PART_SIZE 16384
 
-#define THREADS 256
+#define THREADS 1024
 #define PART_SIZE 1048576
-#define MAX_ITERATIONS 4
+#define MAX_ITERATIONS 1
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -125,7 +125,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
 
   unsigned int partData[PART_SIZE]; // 8192
-  io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, kDataLength * sizeof(unsigned int), data, &ciErrNum);
   intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
   printf("Intermediate size: %d\n", numberOfRuns * THREADS);
 
@@ -134,19 +134,19 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
-    if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
+  if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
 
-    for(int i = 0; i < numberOfRuns; ++i) {
-      for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
-        partData[dataIndex] = data[i*PART_SIZE + dataIndex];
-      }
+  //for(int i = 0; i < numberOfRuns; ++i) {
+    // for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
+    //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
+    // }
 
-      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-      clWaitForEvents(1, &eventWriteBuffer);
-	    printCLError(ciErrNum,7);
+    // ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+    // clWaitForEvents(1, &eventWriteBuffer);
+    // printCLError(ciErrNum,7);
 
-      runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, i);
-    }
+    runKernel(gpgpuReduction, PART_SIZE, data, intermediate, PART_SIZE, i);
+
   }
 
   unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS));
