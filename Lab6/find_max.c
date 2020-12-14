@@ -138,8 +138,15 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       // for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
       //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
       // }
+clEnqueueWriteBuffer(queue, 
+            cl_buffer_input, // opencl buffer
+            CL_TRUE, //Blocking?
+            0, // No offset inside the buffer (the image will start at 0 inside the cl_buffer)
+            WIDTH_IMAGE*(HEIGHT_IMAGE/3))*COLOR_IMAGE_CHANNEL*sizeof(cl_uchar),//Copy only 1/3 of image size
+            (void*)(image_input.data+WIDTH_IMAGE*(HEIGHT_IMAGE/3))*COLOR_IMAGE_CHANNEL), // Offset the input data by 1/3 as well (the first data to copy is at 1/3 inside the array)
+             0, 0, NULL);
 
-      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0 , PART_SIZE*sizeof(unsigned int), (void*)(data + numberOfRuns*PART_SIZE), 0, NULL, &eventWriteBuffer);
+      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0 , PART_SIZE*sizeof(unsigned int), (void*)(data + PART_SIZE), 0, NULL, &eventWriteBuffer);
       clWaitForEvents(1, &eventWriteBuffer);
 	    printCLError(ciErrNum,7);
 
