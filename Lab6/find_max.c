@@ -114,7 +114,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   const int outputsPerThread = PART_SIZE / THREADS;
   const int sizeOfBatchOutput = kDataLength / outputsPerThread;
-  printf("Each thread will output %d numbers per iteration(%d)\n", outputsPerThread, MAX_ITERATIONS);
+  printf("Each thread will output %d numbers per iteration for %d iterations for a total of a %d time total reduction\n", outputsPerThread, MAX_ITERATIONS, MAX_ITERATIONS*outputsPerThread);
 
 	cl_int ciErrNum = CL_SUCCESS;
 	size_t localWorkSize, globalWorkSize;
