@@ -84,7 +84,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, cl_mem intermediate, 
 	// Some reasonable number of blocks based on # of threads
 	if (threads < THREADS) localWorkSize  = threads;
 	else            localWorkSize  = THREADS;
-		globalWorkSize = localWorkSize;
+		globalWorkSize = threads;
 	
 	// set the args values
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
