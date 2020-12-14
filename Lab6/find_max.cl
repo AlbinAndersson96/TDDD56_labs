@@ -9,8 +9,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   const size_t numberOfDigits = length / get_local_size(0);
   const size_t threadIDLocal = get_local_id(0); 
   const size_t threadIDIterative = threadIDLocal * numberOfDigits;
-  
-  
 
   int biggest = 0;
   unsigned int number = 0;
