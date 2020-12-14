@@ -161,7 +161,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   clWaitForEvents(1, &eventReadBuffer);
 
   unsigned int maxVal = 0;
-  for(int t = 0; t < numberOfRuns; ++t) maxVal = fmax((float)maxVal, (float)maxRuns[t]);
+  for(int t = 0; t < numberOfRuns; ++t) maxVal = fmaxf((float)maxVal, (float)maxRuns[t]);
 
   data[0] = maxVal;
   // for(int i = 0; i < numberOfRuns; ++i) {
