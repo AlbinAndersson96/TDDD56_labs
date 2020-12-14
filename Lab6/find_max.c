@@ -42,7 +42,7 @@
 
 #define THREADS 1024
 #define PART_SIZE 524288
-#define MAX_ITERATIONS 1
+#define MAX_ITERATIONS 2
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -127,7 +127,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
   intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
-  printf("Intermediate size: %d\n", (numberOfRuns) * THREADS);
+  printf("Intermediate size: %d\n", numberOfRuns * THREADS);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
