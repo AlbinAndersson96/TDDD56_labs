@@ -154,8 +154,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
         if (maxRuns[i] < partData[j]) maxRuns[i] = partData[j];
       }
     }
-
-    //currentLength = currentLength / outputsPerThread;
   }
 
   ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
@@ -164,7 +162,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int maxVal = 0;
   for(int t = 0; t < numberOfRuns; ++t) {
-    if (maxVal < maxRuns[j]) maxVal = maxRuns[j];
+    if (maxVal < maxRuns[t]) maxVal = maxRuns[t];
   }
 
   data[0] = maxVal;
