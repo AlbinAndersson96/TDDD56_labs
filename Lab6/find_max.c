@@ -111,9 +111,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 {
   printf("GPU reduction.\n");
 
-  // const int outputsPerThread = PART_SIZE / THREADS;
-  // const int sizeOfBatchOutput = kDataLength / outputsPerThread;
-
 	cl_int ciErrNum = CL_SUCCESS;
 	size_t localWorkSize, globalWorkSize;
 	cl_mem io_data, subBuffer;
@@ -126,7 +123,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     maxRuns[i] = 0;
 
   unsigned int partData[PART_SIZE]; // 8192
-  //io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, kDataLength * sizeof(unsigned int), data, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
