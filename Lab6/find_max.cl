@@ -12,7 +12,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
 
   int biggest = 0;
   unsigned int number = 0;
-  for (; i < (threadIDLocal+numberOfDigits); ++i) {
+  for (; i <= (threadIDLocal+numberOfDigits); ++i) {
     number = data[i];
     if (biggest < number) biggest = number;
   }
