@@ -34,8 +34,8 @@
 //#define kDataLength 16777216
 //#define kDataLength 33554432
 //#define kDataLength 67108864
-#define kDataLength 268435456
-//#define kDataLength 1073741824
+//#define kDataLength 268435456
+#define kDataLength 1073741824
 
 // #define THREADS 256
 // #define PART_SIZE 16384
