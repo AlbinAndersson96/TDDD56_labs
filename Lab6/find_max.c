@@ -157,7 +157,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   }
 
   unsigned int maxVal = 0;
-  for(int t = 0; t <= numberOfRuns; ++t) {
+  for(int t = 0; t < numberOfRuns; ++t) {
     if (maxVal < maxRuns[t]) maxVal = maxRuns[t];
   }
 
