@@ -164,7 +164,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     clWaitForEvents(1, &eventReadBuffer);
 
     unsigned int max = 0;
-    for(int t = 0; t < sizeOfBatchOutput; ++t) {
+    for(int t = 0; t < THREADS; ++t) {
       if (max < data[t]) {
         max = data[t];
       }
