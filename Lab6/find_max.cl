@@ -5,9 +5,6 @@
 __kernel void find_max(__global unsigned int *data, const unsigned int length)
 { 
   const size_t threadIDLocal = get_local_id(0);
-
-  const size_t threadIDGlobal1 = get_global_id(0);
-  const size_t threadIDGlobal2 = threadIDGlobal1*2;
   
   // 524288 / 1024 = 512
   const size_t numberOfDigits = length / get_local_size(0);
