@@ -139,7 +139,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
       // }
 
-      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, PART_SIZE*numberOfRuns, PART_SIZE*sizeof(unsigned int), data, 0, NULL, &eventWriteBuffer);
+      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, PART_SIZE*numberOfRuns*sizeof(unsigned int), PART_SIZE*sizeof(unsigned int), data, 0, NULL, &eventWriteBuffer);
       clWaitForEvents(1, &eventWriteBuffer);
 	    printCLError(ciErrNum,7);
 
