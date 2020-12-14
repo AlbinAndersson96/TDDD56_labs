@@ -34,14 +34,14 @@
 //#define kDataLength 16777216
 //#define kDataLength 33554432
 //#define kDataLength 67108864
-//#define kDataLength 268435456
-#define kDataLength 1073741824
+#define kDataLength 268435456
+//#define kDataLength 1073741824
 
 // #define THREADS 256
 // #define PART_SIZE 16384
 
 #define THREADS 1024
-#define PART_SIZE 1048576
+#define PART_SIZE 524288
 #define MAX_ITERATIONS 2
 
 // #define THREADS 512
@@ -135,7 +135,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
     if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
-
+    printf("Iteration: %d -> Number of runs: %d, Current length: %d", iteration, numberOfRuns, currentLength);
+    
     for(int i = 0; i < numberOfRuns; ++i) {
       for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
         partData[dataIndex] = data[i*PART_SIZE + dataIndex];
@@ -147,6 +148,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
       runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, (i+1));
     }
+
+    currentLength = currentLength / outputsPerThread;
   }
 
   unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS));
