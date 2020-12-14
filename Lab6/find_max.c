@@ -118,9 +118,12 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	size_t localWorkSize, globalWorkSize;
 	cl_mem io_data;
   
-  int numberOfRuns = (kDataLength / PART_SIZE), currentLength = kDataLength;
-  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
+  int numberOfRuns = (kDataLength / PART_SIZE);
+  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE); // 131072 times
 
+  unsigned int maxRuns[numberOfRuns];
+  for(int i = 0; i < numberOfRuns; i++)
+    maxRuns[i] = 0;
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
@@ -132,9 +135,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
-    //if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
-    printf("Iteration: %d -> Number of runs: %d, Current length: %d\n", iteration, numberOfRuns, currentLength);
-    
     for(int i = 0; i < numberOfRuns; ++i) {
       for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
         partData[dataIndex] = data[i*PART_SIZE + dataIndex];
@@ -145,6 +145,12 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	    printCLError(ciErrNum,7);
 
       runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
+
+      ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+      printCLError(ciErrNum,11);
+      clWaitForEvents(1, &eventReadBuffer);
+
+      for(int j = 0; j < THREADS; ++j) maxRuns[i] = max(maxRuns[i], partData[j]);
     }
 
     //currentLength = currentLength / outputsPerThread;
@@ -154,12 +160,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   printCLError(ciErrNum,11);
   clWaitForEvents(1, &eventReadBuffer);
 
-  unsigned int max = 0;
-  for(int t = 0; t < THREADS; ++t) {
-    if (max < data[t]) {
-      max = data[t];
-    }
-  }
+  unsigned int maxVal = 0;
+  for(int t = 0; t < numberOfRuns; ++t) maxVal = max(maxVal, maxRuns[t]);
 
   data[0] = max;
   // for(int i = 0; i < numberOfRuns; ++i) {
