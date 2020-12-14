@@ -154,7 +154,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   printCLError(ciErrNum,11);
   clWaitForEvents(1, &eventReadBuffer);
 
-  printf("Current size: %d\n", currentSize);
+  printf("The CPU will handle the reduced output of size: %d\n", currentSize);
   unsigned int max = 0;
   for(int t = 0; t < currentSize; ++t) {
     if (max < data[t]) {
