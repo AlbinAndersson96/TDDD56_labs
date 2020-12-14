@@ -8,8 +8,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
 
   const size_t threadIDGlobal1 = get_global_id(0);
   const size_t threadIDGlobal2 = threadIDGlobal1*2;
-
-  if (get_local_id(0) == 0) printf("global id is %d\n", get_global_id(0)); 
   
   // 1048576 / 1024 = 1024
   const size_t numberOfDigits = length / get_local_size(0);
