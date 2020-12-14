@@ -120,8 +120,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	size_t localWorkSize, globalWorkSize;
 	cl_mem io_data, intermediate;
   
-  int numberOfRuns = (kDataLength / PART_SIZE) + 1, currentLength = kDataLength;
-  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
+  int numberOfRuns = (kDataLength / PART_SIZE), currentLength = kDataLength;
+  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE); // 131072 times
 
 
   unsigned int partData[PART_SIZE]; // 8192
@@ -134,7 +134,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
-    if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE) + 1;
+    if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
 
     for(int i = 0; i < numberOfRuns; ++i) {
       for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
@@ -149,7 +149,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     }
   }
 
-  unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS)) + 1;
+  unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS));
   ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, currentSize*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
   printCLError(ciErrNum,11);
   clWaitForEvents(1, &eventReadBuffer);
