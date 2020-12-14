@@ -33,9 +33,9 @@
 //#define kDataLength 8388608
 //#define kDataLength 16777216
 //#define kDataLength 33554432
-#define kDataLength 67108864
+//#define kDataLength 67108864
 //#define kDataLength 268435456
-//#define kDataLength 1073741824
+#define kDataLength 1073741824
 
 // #define THREADS 256
 // #define PART_SIZE 16384
@@ -140,9 +140,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
     for(int i = 0; i < numberOfRuns; ++i) {
-      // for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
-      //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
-      // }
       bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
       subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
       clWaitForEvents(1, &eventWriteBuffer);
