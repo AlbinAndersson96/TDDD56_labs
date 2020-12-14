@@ -20,7 +20,7 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
     if (biggest < number) biggest = number;
   }
 
-  //barrier(CLK_GLOBAL_MEM_FENCE);
+  barrier(CLK_GLOBAL_MEM_FENCE);
 
-  if (data[threadIDLocal*currentRun] < biggest) data[threadIDLocal*currentRun] = biggest;
+  if (data[threadIDLocal] < biggest) data[threadIDLocal] = biggest;
 }
