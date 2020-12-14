@@ -74,7 +74,7 @@ unsigned int *generateRandomData(unsigned int length)
 // Kernel run conveniently packed. Edit as needed, i.e. with more parameters.
 // Only ONE array of data.
 // __kernel void sort(__global unsigned int *data, const unsigned int length)
-void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
+void runKernel(cl_kernel kernel, int threads, cl_mem data, cl_mem intermediate, unsigned int length)
 {
   // threads = 16384, length = 16384
 	size_t localWorkSize, globalWorkSize;
@@ -88,6 +88,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	// set the args values
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length); // 16384
+  ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &intermediate);
   //ciErrNum |= clSetKernelArg(kernel, 2, localWorkSize*sizeof(cl_uint), NULL); // 16384
   
   printCLError(ciErrNum,8);
@@ -107,12 +108,16 @@ static cl_kernel gpgpuReduction;
 
 int find_max_gpu(unsigned int *data, unsigned int length)
 {
+  const int outputsPerThread = PART_SIZE / THREADS;
+  const int sizeOfBatchOutput = kDataLength / outputsPerThread;
+
 	cl_int ciErrNum = CL_SUCCESS;
 	size_t localWorkSize, globalWorkSize;
-	cl_mem io_data;
+	cl_mem io_data, intermediate;
 	printf("GPU reduction.\n");
 
   int numberOfRuns = 1;
+  
   // 33554432 / 8192 = 4096
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
 
@@ -123,6 +128,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
+  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, sizeOfBatchOutput * sizeof(unsigned int), NULL, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
@@ -136,36 +142,48 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
 	  printCLError(ciErrNum,7);
-    clFinish(commandQueue);
+    //clFinish(commandQueue);
 
 	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
+	  runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE);
 
 	  // Get data
-	  ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  // ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	  // printCLError(ciErrNum,11);
+    // clWaitForEvents(1, &eventReadBuffer);
+
+    // for(int t = 0; t < THREADS; ++t) {
+    //   if (maxRuns[i] < partData[t]) {
+    //     //printf("New max: %d\n", partData[t]);
+    //     maxRuns[i] = partData[t];
+    //   }
+    // }
+  }
+  	ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, sizeOfBatchOutput*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
-    for(int t = 0; t < THREADS; ++t) {
-      if (maxRuns[i] < partData[t]) {
+    for(int t = 0; t < numberOfRuns*THREADS; ++t) {
+      if (maxRuns[0] < data[t]) {
         //printf("New max: %d\n", partData[t]);
-        maxRuns[i] = partData[t];
+        maxRuns[0] = data[t];
       }
     }
-  }
 
-  //Last pass on CPU
-  unsigned int max = 0;
-  for(int i = 0; i < numberOfRuns - 1; i++)
-  {
-    //printf("Max %d: %u\n", i, maxRuns[i]);
-    if(maxRuns[i] > max) {
-      //printf("New max in last it at index %d: %d\n", i, maxRuns[i]);
-      max = maxRuns[i];
-    }
+    data[0] = maxRuns[0];
+
+  // //Last pass on CPU
+  // unsigned int max = 0;
+  // for(int i = 0; i < numberOfRuns - 1; i++)
+  // {
+  //   //printf("Max %d: %u\n", i, maxRuns[i]);
+  //   if(maxRuns[i] > max) {
+  //     //printf("New max in last it at index %d: %d\n", i, maxRuns[i]);
+  //     max = maxRuns[i];
+  //   }
       
-  }
-  data[0] = max;
+  // }
+  // data[0] = max;
   
 	return ciErrNum;
 }
