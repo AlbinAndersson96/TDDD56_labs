@@ -9,13 +9,13 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
   const size_t threadIDGlobal1 = get_global_id(0);
   const size_t threadIDGlobal2 = threadIDGlobal1*2;
   
-  // 1048576 / 1024 = 1024
+  // 524288 / 1024 = 512
   const size_t numberOfDigits = length / get_local_size(0);
-  int i = threadIDLocal * get_local_size(0);
+  int i = threadIDLocal;
 
   int biggest = 0;
   unsigned int number = 0;
-  for (; i < (threadIDLocal+1) * get_local_size(0); ++i) {
+  for (; i < (threadIDLocal+numberOfDigits); ++i) {
     number = data[i];
     if (biggest < number) biggest = number;
   }
