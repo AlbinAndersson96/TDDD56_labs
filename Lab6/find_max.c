@@ -42,7 +42,7 @@
 
 #define THREADS 1024
 #define PART_SIZE 32768
-#define MAX_ITERATIONS 1
+#define MAX_ITERATIONS 2
 
 // #define THREADS 512
 // #define PART_SIZE 16384
@@ -110,23 +110,24 @@ static cl_kernel gpgpuReduction;
 
 int find_max_gpu(unsigned int *data, unsigned int length)
 {
+  printf("GPU reduction.\n");
+
   const int outputsPerThread = PART_SIZE / THREADS;
   const int sizeOfBatchOutput = kDataLength / outputsPerThread;
-  printf("Each thread will output %d numbers per iteration\n", outputsPerThread);
+  printf("Each thread will output %d numbers per iteration(%d)\n", outputsPerThread, MAX_ITERATIONS);
 
 	cl_int ciErrNum = CL_SUCCESS;
 	size_t localWorkSize, globalWorkSize;
 	cl_mem io_data, intermediate;
-	printf("GPU reduction.\n");
   
-  int numberOfRuns = kDataLength / PART_SIZE, currentLength = kDataLength;
+  int numberOfRuns = (kDataLength / PART_SIZE) + 1, currentLength = kDataLength;
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
 
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
   intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
-  printf("Intermediate size: %d\n", numberOfRuns * THREADS);
+  printf("Intermediate size: %d\n", (numberOfRuns) * THREADS);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
