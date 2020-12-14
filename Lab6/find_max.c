@@ -74,7 +74,7 @@ unsigned int *generateRandomData(unsigned int length)
 // Kernel run conveniently packed. Edit as needed, i.e. with more parameters.
 // Only ONE array of data.
 // __kernel void sort(__global unsigned int *data, const unsigned int length)
-void runKernel(cl_kernel kernel, int threads, cl_mem data, cl_mem intermediate, unsigned int length)
+void runKernel(cl_kernel kernel, int threads, cl_mem data, cl_mem intermediate, unsigned int length, const unsigned int currentRun)
 {
   // threads = 16384, length = 16384
 	size_t localWorkSize, globalWorkSize;
@@ -89,6 +89,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, cl_mem intermediate, 
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData
 	ciErrNum |= clSetKernelArg(kernel, 1, sizeof(cl_uint), (void *) &length); // 16384
   ciErrNum |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *) &intermediate);
+  ciErrNum |= clSetKernelArg(kernel, 3, sizeof(cl_uint), (void *) &currentRun);
   //ciErrNum |= clSetKernelArg(kernel, 2, localWorkSize*sizeof(cl_uint), NULL); // 16384
   
   printCLError(ciErrNum,8);
@@ -115,62 +116,85 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	size_t localWorkSize, globalWorkSize;
 	cl_mem io_data, intermediate;
 	printf("GPU reduction.\n");
-
-  int numberOfRuns = 1;
   
-  // 33554432 / 8192 = 4096
+  int numberOfRuns = kDataLength / PART_SIZE, currentLength = kDataLength;
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE) + 1; // 131072 times
 
-  unsigned int maxRuns[numberOfRuns]; // 131072 size (131072 maxes)
-  for(int i = 0; i < numberOfRuns; ++i) {
-    maxRuns[i] = 0;
-  }
+  // unsigned int maxRuns[numberOfRuns]; // 131072 size (131072 maxes)
+  // for(int i = 0; i < numberOfRuns; ++i) {
+  //   maxRuns[i] = 0;
+  // }
+
+  
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
-  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeOfBatchOutput * sizeof(unsigned int), NULL, &ciErrNum);
+  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
-  for(int i = 0; i < numberOfRuns; ++i) {
+
+  const unsigned int MAX_ITERATIONS = 2;
+  for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
-    for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex)
-    {
-      partData[dataIndex] = data[i*PART_SIZE + dataIndex];
+    if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE) + 1;
+
+    for(int i = 0; i < numberOfRuns; ++i) {
+      for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
+        partData[dataIndex] = data[i*PART_SIZE + dataIndex];
+      }
+
+      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+      clWaitForEvents(1, &eventWriteBuffer);
+	    printCLError(ciErrNum,7);
+
+      runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, i);
     }
-
-    ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-    clWaitForEvents(1, &eventWriteBuffer);
-	  printCLError(ciErrNum,7);
-    //clFinish(commandQueue);
-
-	  // ********** RUN THE KERNEL ************
-	  runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE);
-
-	  // Get data
-	  // ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-	  // printCLError(ciErrNum,11);
-    // clWaitForEvents(1, &eventReadBuffer);
-
-    // for(int t = 0; t < THREADS; ++t) {
-    //   if (maxRuns[i] < partData[t]) {
-    //     //printf("New max: %d\n", partData[t]);
-    //     maxRuns[i] = partData[t];
-    //   }
-    // }
   }
-  	ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, sizeOfBatchOutput*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
-	  printCLError(ciErrNum,11);
-    clWaitForEvents(1, &eventReadBuffer);
+
+  unsigned int currentSize = kDataLength / (outputsPerThread * MAX_ITERATIONS);
+  ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, currentSize*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
+  printCLError(ciErrNum,11);
+  clWaitForEvents(1, &eventReadBuffer);
 
     unsigned int max = 0;
-    for(int t = 0; t < THREADS; ++t) {
+    for(int t = 0; t < currentSize; ++t) {
       if (max < data[t]) {
         max = data[t];
       }
     }
 
     data[0] = max;
+  // for(int i = 0; i < numberOfRuns; ++i) {
+    
+  //   for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex)
+  //   {
+  //     partData[dataIndex] = data[i*PART_SIZE + dataIndex];
+  //   }
+
+  //   ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
+  //   clWaitForEvents(1, &eventWriteBuffer);
+	//   printCLError(ciErrNum,7);
+  //   //clFinish(commandQueue);
+
+	//   // ********** RUN THE KERNEL ************
+	//   runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE);
+
+	//   // Get data
+	//   // ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+	//   // printCLError(ciErrNum,11);
+  //   // clWaitForEvents(1, &eventReadBuffer);
+
+  //   // for(int t = 0; t < THREADS; ++t) {
+  //   //   if (maxRuns[i] < partData[t]) {
+  //   //     //printf("New max: %d\n", partData[t]);
+  //   //     maxRuns[i] = partData[t];
+  //   //   }
+  //   // }
+  // }
+  	// ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, THREADS*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
+	  // printCLError(ciErrNum,11);
+    // clWaitForEvents(1, &eventReadBuffer);
 
   // //Last pass on CPU
   // unsigned int max = 0;

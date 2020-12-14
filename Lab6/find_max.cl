@@ -2,7 +2,7 @@
  * Placeholder OpenCL kernel
  */
 
-__kernel void find_max(__global unsigned int *data, const unsigned int length, __global unsigned int *intermediate)
+__kernel void find_max(__global unsigned int *data, const unsigned int length, __global unsigned int *intermediate, const unsigned int currentRun)
 { 
   const size_t threadIDLocal = get_local_id(0);
 
@@ -17,5 +17,5 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
     if (biggest < data[i]) biggest = data[i];
   }
 
-  if (intermediate[threadIDLocal] < biggest) intermediate[threadIDLocal] = biggest;
+  if (intermediate[threadIDLocal*currentRun] < biggest) intermediate[threadIDLocal*currentRun] = biggest;
 }
