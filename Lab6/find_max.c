@@ -135,7 +135,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
     if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
-    printf("Iteration: %d -> Number of runs: %d, Current length: %d", iteration, numberOfRuns, currentLength);
+    printf("Iteration: %d -> Number of runs: %d, Current length: %d\n", iteration, numberOfRuns, currentLength);
     
     for(int i = 0; i < numberOfRuns; ++i) {
       for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
@@ -153,9 +153,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   }
 
   unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS));
-  ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, currentSize*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
-  printCLError(ciErrNum,11);
-  clWaitForEvents(1, &eventReadBuffer);
+  // ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, currentSize*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
+  // printCLError(ciErrNum,11);
+  // clWaitForEvents(1, &eventReadBuffer);
 
   printf("The CPU will handle the reduced output of size: %d\n", currentSize);
   unsigned int max = 0;
