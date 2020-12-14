@@ -145,7 +145,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       clWaitForEvents(1, &eventWriteBuffer);
 	    printCLError(ciErrNum,7);
 
-      runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, i);
+      runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, (i+1));
     }
   }
 
