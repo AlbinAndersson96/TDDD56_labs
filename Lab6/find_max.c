@@ -126,8 +126,8 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, kDataLength * sizeof(unsigned int), data, &ciErrNum);
-  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
-  printf("Intermediate size: %d\n", numberOfRuns * THREADS);
+  intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, THREADS * sizeof(unsigned int), NULL, &ciErrNum);
+  printf("Intermediate size: %d\n", THREADS);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
@@ -150,13 +150,13 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   }
 
   unsigned int currentSize = (kDataLength / (outputsPerThread * MAX_ITERATIONS));
-  ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, currentSize*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
+  ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, THREADS*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
   printCLError(ciErrNum,11);
   clWaitForEvents(1, &eventReadBuffer);
 
-  printf("The CPU will handle the reduced output of size: %d\n", currentSize);
+  printf("The CPU will handle the reduced output of size: %d\n", THREADS);
   unsigned int max = 0;
-  for(int t = 0; t < currentSize; ++t) {
+  for(int t = 0; t < THREADS; ++t) {
     if (max < data[t]) {
       max = data[t];
     }
