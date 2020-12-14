@@ -135,7 +135,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
     printf("Iteration: %d -> Number of runs: %d, Current length: %d\n", iteration, numberOfRuns, currentLength);
     
-    for(int i = 0; i < numberOfRuns; ++i) {
+    for(int i = 0; i <= numberOfRuns; ++i) {
       for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
         partData[dataIndex] = data[i*PART_SIZE + dataIndex];
       }
