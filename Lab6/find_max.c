@@ -134,7 +134,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
-  if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
+  //if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE);
 
   //for(int i = 0; i < numberOfRuns; ++i) {
     // for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
@@ -145,7 +145,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     // clWaitForEvents(1, &eventWriteBuffer);
     // printCLError(ciErrNum,7);
 
-    runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE, 1);
+    runKernel(gpgpuReduction, kDataLength, io_data, intermediate, PART_SIZE, 1);
 
   }
 
