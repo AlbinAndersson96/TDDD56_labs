@@ -33,8 +33,8 @@
 #define maxKernelSizeX 40
 #define maxKernelSizeY 40
 
-#define KERNEL_SIZE_X 35
-#define KERNEL_SIZE_Y 35
+#define KERNEL_SIZE_X 9
+#define KERNEL_SIZE_Y 9
 
 #define BLOCK_SIZE 32
 
@@ -47,15 +47,6 @@ void mapPixel(unsigned char *inputImage, unsigned char *sharedMemory, int shared
 
 }
 
-__device__
-void mapPixelRed(unsigned char *inputImage, unsigned char *sharedMemory, int sharedIndex, int globalIndex)
-{
-	sharedMemory[sharedIndex + 0] = 255.0;
-	sharedMemory[sharedIndex + 1] = 0;
-	sharedMemory[sharedIndex + 2] = 0;
-
-}
-
 __global__
 void filterKernel(unsigned char *inputImage, unsigned char *out, const unsigned int imagesizex, const unsigned int imagesizey, const int kernelsizex, const int kernelsizey) {
 	
@@ -63,7 +54,6 @@ void filterKernel(unsigned char *inputImage, unsigned char *out, const unsigned 
 
 	int maxSideSize = (kernelsizex > kernelsizey) ? kernelsizex : kernelsizey;
 	int pad_x = blockDim.x + maxSideSize - 1;
-	int pad_y = blockDim.y + maxSideSize - 1;
 	
 	int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x);
 	int index_y_img = (blockIdx.y * blockDim.y + threadIdx.y);
@@ -108,6 +98,138 @@ void filterKernel(unsigned char *inputImage, unsigned char *out, const unsigned 
 	out[global_index + 2] = b/divby;
 }
 
+__global__
+void filterKernelMedian(unsigned char *inputImage, unsigned char *out, const unsigned int imagesizex, const unsigned int imagesizey, const int kernelsizex, const int kernelsizey) {
+	
+	extern __shared__ unsigned char sharedMemory[];
+
+	int maxSideSize = (kernelsizex > kernelsizey) ? kernelsizex : kernelsizey;
+	int pad_x = blockDim.x + maxSideSize - 1;
+	
+	int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x);
+	int index_y_img = (blockIdx.y * blockDim.y + threadIdx.y);
+
+	int index_shared_x = threadIdx.x + (maxSideSize/2);
+	int index_shared_y = threadIdx.y + (maxSideSize/2);
+
+	int index_shared = 0;
+	int global_index = 0;
+	
+
+	for(int i = -maxSideSize/2; i <= maxSideSize/2; ++i) {
+		index_shared = ((index_shared_y - i) * pad_x + index_shared_x - i) * 3;
+		global_index = ((index_y_img - i) * imagesizex + index_x_img - i) * 3;
+
+		mapPixel(inputImage, sharedMemory, index_shared, global_index);
+	}
+
+	for(int i = -maxSideSize/2; i <= maxSideSize/2; ++i) {
+		index_shared = ((index_shared_y - i) * pad_x + index_shared_x + i) * 3;
+		global_index = ((index_y_img - i) * imagesizex + index_x_img + i) * 3;
+
+		mapPixel(inputImage, sharedMemory, index_shared, global_index);
+	}
+
+	__syncthreads();
+
+	const int MAX_SIDE = KERNEL_SIZE_X > KERNEL_SIZE_Y ? KERNEL_SIZE_X : KERNEL_SIZE_Y;
+	unsigned char holdR[MAX_SIDE], holdG[MAX_SIDE], holdB[MAX_SIDE]; // 35x1 -> 1x35
+	unsigned char temp;
+	size_t arrCounter = 0;
+
+	for(int i = -(kernelsizex/2); i <= (kernelsizex/2); ++i) {
+		for(int j = -(kernelsizey/2); j <= (kernelsizey/2); ++j) {
+			holdR[arrCounter] = sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 0];
+			holdG[arrCounter] = sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 1];
+			holdB[arrCounter] = sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 2];
+			arrCounter++;
+		}
+	}
+
+	// Bubble sorts is not data dependent
+	for (int i = 0; i < arrCounter-1; ++i) {  
+		for (int j = 0; j < arrCounter-i-1; ++j) {
+			if (holdR[j] > holdR[j+1]) {			
+				temp = holdR[j];
+				holdR[j] = holdR[j+1];
+				holdR[j+1] = temp;
+			}
+
+			if (holdG[j] > holdG[j+1]) {			
+				temp = holdG[j];
+				holdG[j] = holdG[j+1];
+				holdG[j+1] = temp;
+			}
+
+			if (holdB[j] > holdB[j+1]) {			
+				temp = holdB[j];
+				holdB[j] = holdB[j+1];
+				holdB[j+1] = temp;
+			}
+		}
+	}
+
+	global_index = (index_y_img * imagesizex + index_x_img) * 3;
+
+	out[global_index + 0] = holdR[(arrCounter-1)/2];
+	out[global_index + 1] = holdG[(arrCounter-1)/2];
+	out[global_index + 2] = holdB[(arrCounter-1)/2];
+}
+
+__global__
+void filterKernelGaussian(unsigned char *inputImage, unsigned char *out, const unsigned int imagesizex, const unsigned int imagesizey, const int kernelsizex, const int kernelsizey) {
+	
+	extern __shared__ unsigned char sharedMemory[];
+
+	int maxSideSize = (kernelsizex > kernelsizey) ? kernelsizex : kernelsizey;
+	int pad_x = blockDim.x + maxSideSize - 1;
+	
+	int index_x_img = (blockIdx.x * blockDim.x + threadIdx.x);
+	int index_y_img = (blockIdx.y * blockDim.y + threadIdx.y);
+
+	int index_shared_x = threadIdx.x + (maxSideSize/2);
+	int index_shared_y = threadIdx.y + (maxSideSize/2);
+
+	int index_shared = 0;
+	int global_index = 0;
+	
+
+	for(int i = -maxSideSize/2; i <= maxSideSize/2; ++i) {
+		index_shared = ((index_shared_y - i) * pad_x + index_shared_x - i) * 3;
+		global_index = ((index_y_img - i) * imagesizex + index_x_img - i) * 3;
+
+		mapPixel(inputImage, sharedMemory, index_shared, global_index);
+	}
+
+	for(int i = -maxSideSize/2; i <= maxSideSize/2; ++i) {
+		index_shared = ((index_shared_y - i) * pad_x + index_shared_x + i) * 3;
+		global_index = ((index_y_img - i) * imagesizex + index_x_img + i) * 3;
+
+		mapPixel(inputImage, sharedMemory, index_shared, global_index);
+	}
+
+	__syncthreads();
+
+	global_index = (index_y_img * imagesizex + index_x_img) * 3;
+	//int divby = kernelsizex*kernelsizey;
+
+	int weightIndex = 0;
+
+	float r=0.0, g=0.0, b=0.0;
+	for(int i = -(kernelsizex/2); i <= (kernelsizex/2); ++i) {
+		for(int j = -(kernelsizey/2); j <= (kernelsizey/2); ++j) {
+			r += sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 0];
+			g += sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 1];
+			b += sharedMemory[((index_shared_y + i)*pad_x + (index_shared_x + j))*3 + 2];
+			weightIndex++;
+		}
+	}
+
+	out[global_index + 0] = r/16;
+	out[global_index + 1] = g/16;
+	out[global_index + 2] = b/16;
+}
+
 __global__ void filter(unsigned char *image, unsigned char *out, const unsigned int imagesizex, const unsigned int imagesizey, const int kernelsizex, const int kernelsizey)
 { 
 
@@ -149,10 +271,76 @@ unsigned int imagesizey, imagesizex; // Image size
 ////////////////////////////////////////////////////////////////////////////////
 // main computation function
 ////////////////////////////////////////////////////////////////////////////////
-void computeImagesBest(int kernelsizex, int kernelsizey)
+void computeImagesMedian(int kernelsizex, int kernelsizey)
+{
+	if (kernelsizex > maxKernelSizeX || kernelsizey > maxKernelSizeY)
+	{
+		printf("Kernel size out of bounds!\n");
+		return;
+	}
+
+	pixels = (unsigned char *) malloc(imagesizex*imagesizey*3);
+	cudaMalloc( (void**)&dev_input, imagesizex*imagesizey*3);
+	cudaMemcpy( dev_input, image, imagesizey*imagesizex*3, cudaMemcpyHostToDevice );
+	cudaMalloc( (void**)&dev_bitmap, imagesizex*imagesizey*3);
+	//cudaMalloc( (void**)&dev)
+
+	// 1 thread per pixel in each kernel
+	dim3 threadsPerBlock(BLOCK_SIZE, BLOCK_SIZE);
+	//dim3 grid(imagesizex / threadsPerBlock.x, imagesizey / threadsPerBlock.y);
+	dim3 grid(imagesizex / threadsPerBlock.x, imagesizey / threadsPerBlock.y);
+
+	int maxSideSize = (kernelsizex > kernelsizey) ? kernelsizex : kernelsizey;
+	filterKernelMedian<<<grid, threadsPerBlock, ((imagesizex/grid.x) + maxSideSize - 1)*((imagesizey/grid.y) + maxSideSize - 1)*3*sizeof(unsigned char)>>>(dev_input, dev_bitmap, imagesizex, imagesizey, kernelsizex, 1);
+	cudaDeviceSynchronize();
+	filterKernelMedian<<<grid, threadsPerBlock, ((imagesizex/grid.x) + maxSideSize - 1)*((imagesizey/grid.y) + maxSideSize - 1)*3*sizeof(unsigned char)>>>(dev_bitmap, dev_bitmap, imagesizex, imagesizey, 1, kernelsizey);
+	cudaDeviceSynchronize();
+	//	Check for errors!
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess)
+        printf("Error: %s\n", cudaGetErrorString(err));
+	cudaMemcpy( pixels, dev_bitmap, imagesizey*imagesizex*3, cudaMemcpyDeviceToHost );
+	cudaFree( dev_bitmap );
+	cudaFree( dev_input );
+}
+
+void computeImagesGaussian(int kernelsizex, int kernelsizey)
 {
 
+	if (kernelsizex > maxKernelSizeX || kernelsizey > maxKernelSizeY)
+	{
+		printf("Kernel size out of bounds!\n");
+		return;
+	}
 
+	pixels = (unsigned char *) malloc(imagesizex*imagesizey*3);
+	cudaMalloc( (void**)&dev_input, imagesizex*imagesizey*3);
+	cudaMemcpy( dev_input, image, imagesizey*imagesizex*3, cudaMemcpyHostToDevice );
+	cudaMalloc( (void**)&dev_bitmap, imagesizex*imagesizey*3);
+	//cudaMalloc( (void**)&dev)
+
+	// 1 thread per pixel in each kernel
+	dim3 threadsPerBlock(BLOCK_SIZE, BLOCK_SIZE);
+	//dim3 grid(imagesizex / threadsPerBlock.x, imagesizey / threadsPerBlock.y);
+	dim3 grid(imagesizex / threadsPerBlock.x, imagesizey / threadsPerBlock.y);
+
+	int maxSideSize = (kernelsizex > kernelsizey) ? kernelsizex : kernelsizey;
+	filterKernelGaussian<<<grid, threadsPerBlock, ((imagesizex/grid.x) + maxSideSize - 1)*((imagesizey/grid.y) + maxSideSize - 1)*3*sizeof(unsigned char)>>>(dev_input, dev_bitmap, imagesizex, imagesizey, kernelsizex, 1);
+	cudaDeviceSynchronize();
+	filterKernelGaussian<<<grid, threadsPerBlock, ((imagesizex/grid.x) + maxSideSize - 1)*((imagesizey/grid.y) + maxSideSize - 1)*3*sizeof(unsigned char)>>>(dev_bitmap, dev_bitmap, imagesizex, imagesizey, 1, kernelsizey);
+	cudaDeviceSynchronize();
+	//	Check for errors!
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess)
+        printf("Error: %s\n", cudaGetErrorString(err));
+	cudaMemcpy( pixels, dev_bitmap, imagesizey*imagesizex*3, cudaMemcpyDeviceToHost );
+	cudaFree( dev_bitmap );
+	cudaFree( dev_input );
+}
+
+
+void computeImagesBest(int kernelsizex, int kernelsizey)
+{
 	if (kernelsizex > maxKernelSizeX || kernelsizey > maxKernelSizeY)
 	{
 		printf("Kernel size out of bounds!\n");
@@ -299,8 +487,16 @@ int main( int argc, char** argv)
 	elapsed_time = GetMicroseconds();
 	printf("Best kernel time: %d ms\n", elapsed_time);
 
-// You can save the result to a file like this:
-//	writeppm("out.ppm", imagesizey, imagesizex, pixels);
+	ResetMilli();
+	computeImagesGaussian(KERNEL_SIZE_X, KERNEL_SIZE_Y);
+	elapsed_time = GetMicroseconds();
+	printf("Gaussian kernel time: %d ms\n", elapsed_time);
+
+	ResetMilli();
+	computeImagesMedian(KERNEL_SIZE_X, KERNEL_SIZE_Y);
+	elapsed_time = GetMicroseconds();
+	printf("Median kernel time: %d ms\n", elapsed_time);
+
 
 	glutMainLoop();
 	return 0;

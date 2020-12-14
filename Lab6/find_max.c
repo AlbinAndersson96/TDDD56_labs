@@ -84,10 +84,6 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
 	if (threads < THREADS) localWorkSize  = threads;
 	else            localWorkSize  = THREADS;
 		globalWorkSize = localWorkSize;
-
-    // localWorkSize = 256
-    // globalWorkSize = 16384
-    // numberPerThread = 8192/1024 = 8
 	
 	// set the args values
 	ciErrNum  = clSetKernelArg(kernel, 0, sizeof(cl_mem),  (void *) &data); // partData

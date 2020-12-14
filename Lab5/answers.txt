@@ -27,12 +27,17 @@
 
 3.
     -Compare the visual result to that of the box filter. Is the image LP-filtered with the weighted kernel noticeably better?
+        - The result produced by the gaussian kernel is noticeably clearer 
 
     -What was the difference in time to a box filter of the same size (5x5)?
+        - They vary slightly around eachother but are comparable in speed
 
     -If you want to make a weighted kernel customizable by weights from the host, how would you deliver the weights to the GPU?
+        - Using cudaMemcpy from the host to upload the weights (kernel argument)
 
 4.
     -What kind of algorithm did you implement for finding the median?
+        Good old bubble sort
 
     -What filter size was best for reducing noise?
+        7x7 or 9x9 seems like the best compromise of not too much blur and decent noise removal
