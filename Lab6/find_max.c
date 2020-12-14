@@ -127,8 +127,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   unsigned int partData[PART_SIZE]; // 8192
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
-  //intermediate = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, numberOfRuns * THREADS * sizeof(unsigned int), NULL, &ciErrNum);
-  printf("Intermediate size: %d\n", numberOfRuns * THREADS);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
@@ -162,50 +160,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   }
 
   data[0] = maxVal;
-  // for(int i = 0; i < numberOfRuns; ++i) {
-    
-  //   for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex)
-  //   {
-  //     partData[dataIndex] = data[i*PART_SIZE + dataIndex];
-  //   }
 
-  //   ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0, PART_SIZE*sizeof(unsigned int), partData, 0, NULL, &eventWriteBuffer);
-  //   clWaitForEvents(1, &eventWriteBuffer);
-	//   printCLError(ciErrNum,7);
-  //   //clFinish(commandQueue);
-
-	//   // ********** RUN THE KERNEL ************
-	//   runKernel(gpgpuReduction, PART_SIZE, io_data, intermediate, PART_SIZE);
-
-	//   // Get data
-	//   // ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-	//   // printCLError(ciErrNum,11);
-  //   // clWaitForEvents(1, &eventReadBuffer);
-
-  //   // for(int t = 0; t < THREADS; ++t) {
-  //   //   if (maxRuns[i] < partData[t]) {
-  //   //     //printf("New max: %d\n", partData[t]);
-  //   //     maxRuns[i] = partData[t];
-  //   //   }
-  //   // }
-  // }
-  	// ciErrNum = clEnqueueReadBuffer(commandQueue, intermediate, CL_TRUE, 0, THREADS*sizeof(unsigned int), data, 0, NULL, &eventReadBuffer);
-	  // printCLError(ciErrNum,11);
-    // clWaitForEvents(1, &eventReadBuffer);
-
-  // //Last pass on CPU
-  // unsigned int max = 0;
-  // for(int i = 0; i < numberOfRuns - 1; i++)
-  // {
-  //   //printf("Max %d: %u\n", i, maxRuns[i]);
-  //   if(maxRuns[i] > max) {
-  //     //printf("New max in last it at index %d: %d\n", i, maxRuns[i]);
-  //     max = maxRuns[i];
-  //   }
-      
-  // }
-  // data[0] = max;
-  
 	return ciErrNum;
 }
 
