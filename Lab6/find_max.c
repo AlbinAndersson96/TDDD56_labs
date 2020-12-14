@@ -117,7 +117,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
 	cl_int ciErrNum = CL_SUCCESS;
 	size_t localWorkSize, globalWorkSize;
-	cl_mem io_data;
+	cl_mem io_data, subBuffer;
   
   int numberOfRuns = (kDataLength / PART_SIZE);
   if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE); // 131072 times
@@ -127,10 +127,15 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     maxRuns[i] = 0;
 
   unsigned int partData[PART_SIZE]; // 8192
-  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
+  //io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, PART_SIZE * sizeof(unsigned int), partData, &ciErrNum);
+  io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, kDataLength * sizeof(unsigned int), data, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
+
+  cl_buffer_region bufferRegion;
+  bufferRegion.origin = 0;
+  bufferRegion.size = PART_SIZE * sizeof(unsigned int);
 
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
@@ -139,13 +144,13 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
       // }
 
-      ciErrNum = clEnqueueWriteBuffer(commandQueue, io_data, CL_TRUE, 0 , PART_SIZE*sizeof(unsigned int), (void*)(data + PART_SIZE), 0, NULL, &eventWriteBuffer);
+      subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
       clWaitForEvents(1, &eventWriteBuffer);
 	    printCLError(ciErrNum,7);
 
-      runKernel(gpgpuReduction, PART_SIZE, io_data, PART_SIZE);
+      runKernel(gpgpuReduction, PART_SIZE, subBuffer, PART_SIZE);
 
-      ciErrNum = clEnqueueReadBuffer(commandQueue, io_data, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+      ciErrNum = clEnqueueReadBuffer(commandQueue, subBuffer, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
       printCLError(ciErrNum,11);
       clWaitForEvents(1, &eventReadBuffer);
 
