@@ -163,13 +163,14 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	  printCLError(ciErrNum,11);
     clWaitForEvents(1, &eventReadBuffer);
 
+    unsigned int max = 0;
     for(int t = 0; t < sizeOfBatchOutput; ++t) {
-      if (maxRuns[0] < data[t]) {
-        maxRuns[0] = data[t];
+      if (max < data[t]) {
+        max = data[t];
       }
     }
 
-    data[0] = maxRuns[0];
+    data[0] = max;
 
   // //Last pass on CPU
   // unsigned int max = 0;

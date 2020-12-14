@@ -17,7 +17,5 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
     if (biggest < data[i]) biggest = data[i];
   }
 
-  //intermediate[threadIDLocal] = biggest;
-  intermediate[threadIDGlobal1] = biggest;
-
+  if (intermediate[threadIDLocal] < biggest) intermediate[threadIDLocal] = biggest;
 }
