@@ -42,7 +42,7 @@
 
 #define THREADS 1024
 #define PART_SIZE 524288
-#define MAX_ITERATIONS 2
+#define MAX_ITERATIONS 1
 
 // #define THREADS 512
 // #define PART_SIZE 16384
