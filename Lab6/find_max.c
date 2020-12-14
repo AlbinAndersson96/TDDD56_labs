@@ -143,7 +143,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       // for(int dataIndex = 0; dataIndex < PART_SIZE; ++dataIndex) {
       //   partData[dataIndex] = data[i*PART_SIZE + dataIndex];
       // }
-
+      bufferRegion.origin = i*PART_SIZE;
       subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
       clWaitForEvents(1, &eventWriteBuffer);
 	    printCLError(ciErrNum,7);
