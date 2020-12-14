@@ -150,7 +150,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
       printCLError(ciErrNum,11);
       clWaitForEvents(1, &eventReadBuffer);
 
-      for(int j = 0; j < THREADS; ++j) maxRuns[i] = max(maxRuns[i], partData[j]);
+      for(int j = 0; j < THREADS; ++j) maxRuns[i] = fmax(maxRuns[i], partData[j]);
     }
 
     //currentLength = currentLength / outputsPerThread;
@@ -161,7 +161,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   clWaitForEvents(1, &eventReadBuffer);
 
   unsigned int maxVal = 0;
-  for(int t = 0; t < numberOfRuns; ++t) maxVal = max(maxVal, maxRuns[t]);
+  for(int t = 0; t < numberOfRuns; ++t) maxVal = fmax(maxVal, maxRuns[t]);
 
   data[0] = maxVal;
   // for(int i = 0; i < numberOfRuns; ++i) {
