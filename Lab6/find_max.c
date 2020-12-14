@@ -135,7 +135,6 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   cl_event eventReadBuffer, eventWriteBuffer;
   ResetMilli();
 
-  const unsigned int MAX_ITERATIONS = 2;
   for(int iteration = 0; iteration < MAX_ITERATIONS; ++iteration) {
     
     if (currentLength > PART_SIZE) numberOfRuns = (currentLength / PART_SIZE) + 1;
