@@ -11,9 +11,10 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length, _
   
   // 8192 / 1024 = 8
   const size_t numberOfDigits = length / get_local_size(0);
+  int i = threadIDLocal * get_local_size(0);
 
   int biggest = 0;
-  for (int i = threadIDLocal; i < numberOfDigits*get_local_size(0); i += get_local_size(0)) {
+  for (; i < numberOfDigits*get_local_size(0); ++i)) {
     if (biggest < data[i]) biggest = data[i];
   }
 
