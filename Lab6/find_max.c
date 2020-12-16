@@ -141,15 +141,9 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 
   cl_int test;
   for(int i = 0; i < numberOfRuns; ++i) {
-    printf("Before origin set in loop\n");
     bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
     subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &test);
-    printf("After sub buffer in loop\n");
-    printCLError(ciErrNum,7);
-    //clWaitForEvents(1, &eventWriteBuffer);
     
-
-    printf("Before kernel in loop\n");
     runKernel(gpgpuReduction, PART_SIZE, subBuffer, PART_SIZE);
 
     ciErrNum = clEnqueueReadBuffer(commandQueue, subBuffer, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
