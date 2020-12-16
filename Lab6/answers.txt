@@ -11,7 +11,7 @@
 
 2. Reduction
 -What timing did you get for your GPU reduction? Compare it to the CPU version.
-    With data lenght of 2^30: CPU 1.820693 GPU 5.301290
+    With data lenght of 1024 (using 512 threads on GPU): CPU 0.000007 - GPU 0.000297
 
 -Try larger data size. On what size does the GPU version get faster, or at least comparable, to the GPU?
     The GPU surpasses the CPU running 512 threads at a size of 65536 objects. Running 1024 threads yields roughly the same result at this level.
