@@ -123,7 +123,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
 	cl_mem io_data, subBuffer;
   
   int numberOfRuns = (kDataLength / PART_SIZE);
-  if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE); // 131072 times
+  //if (kDataLength > PART_SIZE) numberOfRuns = (kDataLength / PART_SIZE); // 131072 times
 
   unsigned int maxRuns[numberOfRuns];
   for(int i = 0; i < numberOfRuns; i++)
@@ -139,8 +139,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   bufferRegion.origin = 0;
   bufferRegion.size = PART_SIZE * sizeof(unsigned int);
 
-  printf("%d\n", numberOfRuns);
-  for(int i = 0; i < numberOfRuns; ++i) {
+  for(int i = 0; i <= numberOfRuns; ++i) {
     bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
     subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
