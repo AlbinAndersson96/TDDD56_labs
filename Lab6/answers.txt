@@ -28,7 +28,7 @@
     Each thread switches 2 values in the dataset. Which might get equalled to 2 outputs?
 
 -How many items can you handle in one workgroup?
-    The maximum size of one workgroup is 512 elements
+    The maximum size of one workgroup is 512 elements (hardcoded)
 
 -What problem must be solved when you use more than one workgroup? How did you solve it?
     - Local thread index must be changed to global thread index
