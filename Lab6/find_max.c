@@ -129,7 +129,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   for(int i = 0; i < numberOfRuns; i++)
     maxRuns[i] = 0;
 
-  unsigned int partData[PART_SIZE]; // 8192
+  unsigned int partData[PART_SIZE];
   io_data = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, kDataLength * sizeof(unsigned int), data, &ciErrNum);
 
   cl_event eventReadBuffer, eventWriteBuffer;
@@ -139,7 +139,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   bufferRegion.origin = 0;
   bufferRegion.size = PART_SIZE * sizeof(unsigned int);
 
-  for(int i = 0; i <= numberOfRuns; ++i) {
+  for(int i = 0; i < numberOfRuns; ++i) {
     bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
     subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
     clWaitForEvents(1, &eventWriteBuffer);
