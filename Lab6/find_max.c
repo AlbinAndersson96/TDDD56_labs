@@ -29,7 +29,9 @@
 #define MAXPRINTSIZE 16
 
 // Size of data!
-#define kDataLength 4194304
+#define kDataLength 524288
+//#define kDataLength 2097152
+//#define kDataLength 4194304
 //#define kDataLength 8388608
 //#define kDataLength 16777216
 //#define kDataLength 33554432
