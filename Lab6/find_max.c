@@ -140,12 +140,12 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   bufferRegion.size = PART_SIZE * sizeof(unsigned int);
 
   for(int i = 0; i < numberOfRuns; ++i) {
-    bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
-    subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
-    clWaitForEvents(1, &eventWriteBuffer);
-    printCLError(ciErrNum,7);
+    // bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
+    // subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
+    // clWaitForEvents(1, &eventWriteBuffer);
+    // printCLError(ciErrNum,7);
 
-    //runKernel(gpgpuReduction, PART_SIZE, subBuffer, PART_SIZE);
+    runKernel(gpgpuReduction, PART_SIZE, subBuffer, PART_SIZE);
 
     ciErrNum = clEnqueueReadBuffer(commandQueue, subBuffer, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
     printCLError(ciErrNum,11);
