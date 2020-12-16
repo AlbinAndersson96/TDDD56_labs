@@ -48,9 +48,9 @@
 // #define PART_SIZE 16384
 
 #define THREADS 512
-#define PART_SIZE kDataLength
+//#define PART_SIZE kDataLength
 //#define PART_SIZE 524288
-//#define PART_SIZE 1048576
+#define PART_SIZE 1048576
 
 // #define THREADS 512
 // #define PART_SIZE 16384
