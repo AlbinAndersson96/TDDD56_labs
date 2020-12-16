@@ -13,7 +13,6 @@ __kernel void find_max(__global unsigned int *data, const unsigned int length)
   int biggest = 0;
   unsigned int number = 0;
 
-  printf("asdasd\n");
   for (int i = threadIDIterative; i < (threadIDIterative + numberOfDigits); ++i) {
     number = data[i];
     if (biggest < number) biggest = number;
