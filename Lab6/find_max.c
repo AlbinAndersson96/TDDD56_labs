@@ -103,7 +103,7 @@ void runKernel(cl_kernel kernel, int threads, cl_mem data, unsigned int length)
   
 	// Run kernel
   cl_event event;
-  ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
+  //ciErrNum = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, &event);
 
 	printCLError(ciErrNum,9);
 	
@@ -139,21 +139,21 @@ int find_max_gpu(unsigned int *data, unsigned int length)
   bufferRegion.origin = 0;
   bufferRegion.size = PART_SIZE * sizeof(unsigned int);
 
-  // for(int i = 0; i < numberOfRuns; ++i) {
-  //   bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
-  //   subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
-  //   clWaitForEvents(1, &eventWriteBuffer);
-  //   printCLError(ciErrNum,7);
+  for(int i = 0; i < numberOfRuns; ++i) {
+    bufferRegion.origin = i*PART_SIZE*sizeof(unsigned int);
+    subBuffer = clCreateSubBuffer(io_data, CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &bufferRegion, &eventWriteBuffer);
+    clWaitForEvents(1, &eventWriteBuffer);
+    printCLError(ciErrNum,7);
 
-  //   runKernel(gpgpuReduction, PART_SIZE, subBuffer, PART_SIZE);
+    runKernel(gpgpuReduction, PART_SIZE, subBuffer, PART_SIZE);
 
-  //   ciErrNum = clEnqueueReadBuffer(commandQueue, subBuffer, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
-  //   printCLError(ciErrNum,11);
-  //   clWaitForEvents(1, &eventReadBuffer);
+    ciErrNum = clEnqueueReadBuffer(commandQueue, subBuffer, CL_TRUE, 0, THREADS*sizeof(unsigned int), partData, 0, NULL, &eventReadBuffer);
+    printCLError(ciErrNum,11);
+    clWaitForEvents(1, &eventReadBuffer);
 
-  //   for(int j = 0; j < THREADS; ++j) {
-  //     if (maxRuns[i] < partData[j]) maxRuns[i] = partData[j];
-  //   }
+    for(int j = 0; j < THREADS; ++j) {
+      if (maxRuns[i] < partData[j]) maxRuns[i] = partData[j];
+    }
   // }
 
   unsigned int maxVal = 0;
