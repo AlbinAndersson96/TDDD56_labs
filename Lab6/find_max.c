@@ -154,7 +154,7 @@ int find_max_gpu(unsigned int *data, unsigned int length)
     for(int j = 0; j < THREADS; ++j) {
       if (maxRuns[i] < partData[j]) maxRuns[i] = partData[j];
     }
-  // }
+   }
 
   unsigned int maxVal = 0;
   for(int t = 0; t < numberOfRuns; ++t) {
