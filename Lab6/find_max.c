@@ -29,7 +29,9 @@
 #define MAXPRINTSIZE 16
 
 // Size of data!
-#define kDataLength 524288
+#define kDataLength 131072
+//#define kDataLength 262144
+//#define kDataLength 524288
 //#define kDataLength 1048576
 //#define kDataLength 2097152
 //#define kDataLength 4194304
@@ -44,7 +46,8 @@
 // #define PART_SIZE 16384
 
 #define THREADS 512
-#define PART_SIZE 524288
+#define PART_SIZE kDataLength
+//#define PART_SIZE 524288
 //#define PART_SIZE 1048576
 
 // #define THREADS 512
